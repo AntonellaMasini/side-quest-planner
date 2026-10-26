@@ -33,7 +33,7 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 #globe{position:absolute;inset:0;width:100%;height:100%;transition:opacity .9s ease;z-index:2}
 #map{position:absolute;inset:0;opacity:0;transition:opacity 1s ease;z-index:1;background:var(--parch2);border-radius:6px;box-shadow:0 0 0 1px var(--faint),0 20px 50px rgba(70,45,15,.25)}
 #map.on{opacity:1;z-index:3}
-#map .leaflet-tile-pane{filter:sepia(.75) saturate(.75) hue-rotate(-10deg) contrast(.9) brightness(1.03)}
+#map .leaflet-tile-pane{filter:sepia(.38) saturate(.85) hue-rotate(-4deg) contrast(.93) brightness(1.03)}
 .stage-title{position:absolute;left:0;right:0;top:6px;z-index:460;text-align:center;padding:0 16px;pointer-events:none;transition:opacity .6s}
 .stage-title h1{font:500 italic clamp(52px,8vw,112px)/.9 var(--display);margin:0;letter-spacing:-.01em;color:var(--ink)}
 .stage-title h1 .cap{color:var(--wax)}
@@ -71,7 +71,7 @@ button:active{transform:translateY(1px)}
 /* results */
 #result{position:relative}
 .trail{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:visible}
-.trail path{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-dasharray:3 9;stroke-linecap:round;opacity:.55}
+.trail path{fill:none;stroke:var(--ink);stroke-width:1.2;stroke-dasharray:2 10;stroke-linecap:round;opacity:.3}
 .trail .fp{fill:var(--ink);opacity:0;transition:opacity .5s ease}
 .trail .fp.on{opacity:.75}
 .days{position:relative;z-index:1;display:grid;gap:70px;margin-top:70px}
@@ -178,6 +178,24 @@ footer{position:relative;z-index:1;margin-top:60px;font-size:12.5px;color:var(--
 .stowrow b{display:block;font:600 italic 17px/1.2 var(--display)}.stowrow span{font-size:13px;color:var(--ink2)}
 .stowbtn{flex:none;background:var(--ink);color:var(--paper);text-decoration:none;font:600 14px var(--body);padding:11px 18px;border-radius:999px}
 .stowbtn.done{background:var(--good)}
+
+.crewhead{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:18px;align-items:center}
+@media (max-width:700px){.crewhead{grid-template-columns:auto minmax(0,1fr)}.crewbtns{grid-column:1/-1}}
+.ring{position:relative;width:64px;height:64px}.ring b{position:absolute;inset:0;display:grid;place-items:center;font:600 15px var(--body);font-variant-numeric:tabular-nums}
+.crewtitle h3{margin:0}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px;margin-top:22px}
+.vslot{border:1px solid var(--faint);border-radius:14px;padding:14px 16px;background:rgba(239,227,200,.35)}
+.vhead{display:flex;align-items:center;gap:8px;font:500 11.5px var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);margin-bottom:10px}
+.vhead .dot{width:9px;height:9px;border-radius:50%}
+.vopt{display:grid;grid-template-columns:minmax(0,1fr) 22px;gap:4px 10px;align-items:center;padding:6px 0}
+.vopt+.vopt{border-top:1px dashed var(--faint)}
+.vname{grid-column:1/-1;font:600 italic 16.5px/1.2 var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink2)}
+.vname em{font:500 10.5px var(--body);font-style:normal;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);border:1px solid var(--faint);padding:1px 6px;border-radius:999px;margin-left:6px}
+.vopt.win .vname{color:var(--ink)}
+.vbar{height:10px;border-radius:999px;background:rgba(58,40,23,.08);overflow:hidden}
+.vbar i{display:block;height:100%;border-radius:999px;min-width:0;transition:width .6s ease}
+.vcount{font:600 14px var(--body);text-align:right;font-variant-numeric:tabular-nums}
+.crewfoot{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-top:20px}
 .toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:12px 20px;border-radius:999px;font:600 15px var(--body);z-index:3000}
 </style>
 </head>
@@ -200,7 +218,7 @@ footer{position:relative;z-index:1;margin-top:60px;font-size:12.5px;color:var(--
 <div class="wrap">
   <section class="desk">
     <form class="tag" id="brief">
-      <label for="q"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1v14M3 4h10M5 15h6" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>Where be we sailing, and what for?</label>
+      <label for="q"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1v14M3 4h10M5 15h6" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>Where to, and what for?</label>
       <textarea id="q" placeholder="My 30th! 4 of us, New York in May, active + party + great food, ~$300 each">It's my 30th! 4 of us going to New York in May. We love active stuff, partying, good food and drinks. Around $300 each.</textarea>
       <div class="row">
         <button class="go" id="go" type="submit">Chart the course</button>
@@ -209,7 +227,7 @@ footer{position:relative;z-index:1;margin-top:60px;font-size:12.5px;color:var(--
       <div class="chips" id="chips" aria-live="polite"></div>
       <div class="examples"><button type="button" data-ex="Bachelorette weekend in Austin for 6 in March. Party, spa, great food, $250 each.">Austin · bachelorette</button><button type="button" data-ex="Me and my partner, Chicago, a weekend in June. Culture, food tour, a nice dinner and a show.">Chicago · for two</button><button type="button" data-ex="Family trip to San Diego with 2 kids, 4 people, July. Active and outdoors, under $150 each.">San Diego · family</button></div>
     </form>
-    <details class="ticket" id="ticket"><summary id="logsum">Captain's log</summary><div id="log" aria-live="polite"><div class="t">Awaiting orders…</div></div></details>
+    <details class="ticket" id="ticket"><summary id="logsum">Field notes</summary><div id="log" aria-live="polite"><div class="t">Waiting for your trip…</div></div></details>
   </section>
 
   <section id="result"></section>
@@ -358,19 +376,19 @@ async function planTrip(text,fly){
   brief=parse(text); const C=CITIES[brief.city]; const center={lat:C.lat,lng:C.lng};
   $("#chips").innerHTML=[["City",brief.city],["Group",brief.group+" people"],["Dates",fmtDay(brief.start)+" + "+(brief.days-1)+" days"],["Budget",brief.budget?("$"+brief.budget+" each"):"not set"],["Vibe",brief.vibes.join(", ")],...(brief.occasion?[["Occasion",brief.occasion]]:[])].map(([k,v])=>`<span class="chip"><b>${k}</b>${esc(v)}</span>`).join("");
   $("#log").innerHTML=""; reads=0;
-  log(`Orders received: ${brief.group} people, ${brief.city}, ${brief.days} days from ${fmtDay(brief.start)}, vibe ${brief.vibes.join(" + ")}.`);
+  log(`Got it: ${brief.group} people, ${brief.city}, ${brief.days} days from ${fmtDay(brief.start)}, vibe ${brief.vibes.join(" + ")}.`);
   const tripDays=Array.from({length:brief.days},(_,i)=>{const d=new Date(brief.start);d.setDate(d.getDate()+i);return d;});
   const tripEnd=tripDays[tripDays.length-1];
   // searches
   const qs=[]; brief.vibes.forEach(v=>VIBES[v].q.forEach(([q,slot])=>qs.push({q,slot,vibe:v})));
   if(brief.occasion==="birthday") qs.push({q:"birthday dinner",slot:"dinner",vibe:"food"});
-  log(`Scouting ${qs.length} kinds of adventure in ${brief.city}…`);
+  log(`Searching ${qs.length} kinds of plans in ${brief.city}…`);
   const found=new Map();
   await pool(qs,3,async s=>{ const r=await search(s.q+" in "+brief.city,brief.city); const n=(r.offers||[]).length; log(`"${s.q}": ${n} live offers`, n?"ok":"drop"); (r.offers||[]).forEach((o,rank)=>{ if(!found.has(o.id)) found.set(o.id,{...s,rank,summary:o}); }); });
   log(`Reading ${found.size} offers in full (prices, options, fine print, locations)…`);
   const full=await pool([...found.keys()],5,id=>readOffer(id,brief.city));
   candidates=[]; const dropped={};
-  const drop=(why,o)=>{dropped[why]=(dropped[why]||0)+1; if(dropped[why]<=2) log(`Overboard: ${o.experienceTitle||o.title} (${why})`,"drop");};
+  const drop=(why,o)=>{dropped[why]=(dropped[why]||0)+1; if(dropped[why]<=2) log(`Skipped ${o.experienceTitle||o.title}: ${why}`,"drop");};
   [...found.values()].forEach((meta,i)=>{ const o=full[i]; if(!o) return;
     if(!o.buy?.available){drop("not on sale",o);return;}
     if(o.bookable){drop("needs a time-slot booking",o);return;}
@@ -381,7 +399,7 @@ async function planTrip(text,fly){
     const per=pick.total/brief.group;
     candidates.push({o,meta,loc,pick,rules,per,score:(meta.rank||0)*1.2-(Math.log10((o.bought?.atLeast||10)))+ (brief.budget&&per/100>brief.budget*0.6?3:0)});
   });
-  log(`${candidates.length} offers are seaworthy. Charting the days…`,"ok");
+  log(`${candidates.length} offers fit. Planning the days…`,"ok");
   // assign
   const used=new Set(); const dayPlans=tripDays.map((d,i)=>({date:d,stops:[],color:DAYCOLOR[i%DAYCOLOR.length]}));
   const wantSlots=(i,n)=>{ const first=i===0, last=i===n-1; if(n===1) return ["day","dinner","night"]; if(first) return ["evening","night"]; if(last) return ["brunch"]; return i===n-2?["morning","brunch","dinner"]:["day","evening","night"]; };
@@ -403,7 +421,7 @@ async function planTrip(text,fly){
   });
   plan={brief,days:dayPlans,center,hotel:C.hotel};
   if(fly) await Promise.race([fly,sleep(6000)]);
-  log(`Land ho! ${dayPlans.reduce((n,d)=>n+d.stops.length,0)} stops charted with ${reads} live API calls.`,"ok");
+  log(`Done: ${dayPlans.reduce((n,d)=>n+d.stops.length,0)} stops from ${reads} live API calls.`,"ok");
   render(); writeHash();
 }
 const KIND_WORDS=["bike","escape","comedy","brunch","sushi","pasta","class","cruise","massage","spa","museum","tour","steak","bowling","karaoke","drag","wine","speakeasy"];
@@ -429,7 +447,7 @@ function render(){
   const html=`
   <svg class="trail" id="trail" aria-hidden="true"></svg>
   <div class="days">${plan.days.map((d,i)=>dayHTML(d,i)).join("")}</div>
-  <section class="summary"><h2>Yer haul</h2>
+  <section class="summary"><h2>Your trip</h2>
   <div class="totals">
     <div class="tot"><svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="13" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17" cy="17" r="9.5" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2"/><path d="M17 10v14M20.5 12.5c-1-1-2.2-1.4-3.5-1.4-2 0-3.4 1-3.4 2.6 0 3.6 7 1.8 7 5.4 0 1.6-1.5 2.7-3.6 2.7-1.5 0-2.8-.5-3.8-1.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><small>Each</small><b>${money0(total/g)}</b><span>each</span></div>
     <div class="tot"><svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><path d="M5 15h24v13H5z M5 15c0-5 5-8 12-8s12 3 12 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M5 19h24" stroke="currentColor" stroke-width="1.5"/><rect x="14.5" y="17" width="5" height="6" rx="1" fill="currentColor"/></svg><small>Whole crew</small><b>${money0(total)}</b><span>whole crew</span></div>
@@ -437,9 +455,9 @@ function render(){
     <div class="tot"><svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><path d="M4 10h26v4a3 3 0 0 0 0 6v4H4v-4a3 3 0 0 0 0-6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v14" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2 2"/></svg><small>Vouchers</small><b>${vouchers}</b><span>vouchers</span></div>
   </div>
   <div class="actions">
-    <button class="brassbtn" id="addall" type="button">⚓ Stow in cart</button>
-    <button class="ghost" id="ics" type="button">📅 Buy dates</button>
-    <button class="go" id="crewbtn" type="button">🏴‍☠️ Crew vote</button>
+    <button class="brassbtn" id="addall" type="button">Add all to cart</button>
+    <button class="ghost" id="ics" type="button">Buy dates</button>
+    <button class="go" id="crewbtn" type="button">Crew vote</button>
   </div>
   </section>
   <div id="crewbox"></div>`;
@@ -448,7 +466,7 @@ function render(){
 }
 function dayHTML(d,i){
   const n=plan.days.length; const label=i===0?"arrival":i===n-1?"last day":(plan.brief.occasion==="birthday"&&i===Math.min(2,n-2))?"the big day":"";
-  let prev=plan.center; const cards=d.stops.map((s,j)=>{ const m=dist(prev,s.loc); prev=s.loc; return stopHTML(s,i,j,(j===0?"from home port · ":"")+legText(m)); }).join("");
+  let prev=plan.center; const cards=d.stops.map((s,j)=>{ const m=dist(prev,s.loc); prev=s.loc; return stopHTML(s,i,j,(j===0?"from your base · ":"")+legText(m)); }).join("");
   const f=d.stops[0]?.loc||plan.center; const stamp=`${esc(plan.brief.city)}<br>${Math.abs(f.lat).toFixed(3)}° ${f.lat>=0?"N":"S"} · ${Math.abs(f.lng).toFixed(3)}° ${f.lng>=0?"E":"W"}`;
   return `<section class="day" style="--line:${d.color}"><div class="stamp">${stamp}</div><h2>${d.date.toLocaleDateString("en-US",{weekday:"long",day:"numeric",month:"long"})} ${label?`<small>${label}</small>`:""}</h2><div class="stops">${cards||'<div class="meta">A free day. Nothing on sale fit this day, so it stays open.</div>'}</div></section>`;
 }
@@ -466,7 +484,7 @@ function stopHTML(s,di,si,leg){
       <div class="meta">${esc(s.pick.qty)} × ${esc(p.title)}</div>
       <div class="meta">${esc(s.loc.street||s.loc.name||"")}</div>
       <div class="badges">${badges}</div>
-      <div class="foot"><span class="each">${money0(s.pick.total/plan.brief.group)} each</span><div class="btns"><button type="button" class="swap" aria-label="Swap for something nearby" title="Swap">↻</button><a class="add" href="${esc(buyLink(s))}" target="ls_cart" rel="noopener" title="Add to cart">⚓ Add</a></div></div>
+      <div class="foot"><span class="each">${money0(s.pick.total/plan.brief.group)} each</span><div class="btns"><button type="button" class="swap" aria-label="Swap for something nearby" title="Swap">↻</button><a class="add" href="${esc(buyLink(s))}" target="ls_cart" rel="noopener" title="Add to cart">Add</a></div></div>
     </div>
   </article>`;
 }
@@ -499,12 +517,12 @@ async function openSwaps(card){
 function addAll(){
   const stops=plan.days.flatMap(d=>d.stops.map(st=>({st,d})));
   const wrap=document.createElement("div"); wrap.className="deckwrap"; wrap.setAttribute("role","dialog"); wrap.setAttribute("aria-label","Stow the plan");
-  wrap.innerHTML=`<div class="deckpanel stow"><h2>Stow the plan</h2><p>Tap each one. They land in one cart.</p>
-    <div class="stowlist">${stops.map(({st,d},i)=>`<div class="stowrow"><div><b>${esc(st.o.experienceTitle||st.o.title)}</b><span>${fmtDay(d.date)} · ${st.pick.qty} × ${money(st.pick.opt.price.amountMinor)}</span></div><a class="stowbtn" data-i="${i}" href="${esc(buyLink(st))}" target="ls_cart" rel="noopener">⚓ Stow</a></div>`).join("")}</div>
-    <div class="deckprog" id="stowprog">0 of ${stops.length} stowed</div>
+  wrap.innerHTML=`<div class="deckpanel stow"><h2>Add to cart</h2><p>Tap each one. They all land in one cart.</p>
+    <div class="stowlist">${stops.map(({st,d},i)=>`<div class="stowrow"><div><b>${esc(st.o.experienceTitle||st.o.title)}</b><span>${fmtDay(d.date)} · ${st.pick.qty} × ${money(st.pick.opt.price.amountMinor)}</span></div><a class="stowbtn" data-i="${i}" href="${esc(buyLink(st))}" target="ls_cart" rel="noopener">Add</a></div>`).join("")}</div>
+    <div class="deckprog" id="stowprog">0 of ${stops.length} added</div>
     <div class="deckbtns" style="margin-top:12px"><a class="byes" href="https://customers.livingsocial.com/cart" target="ls_cart" rel="noopener" style="text-decoration:none;padding:12px 20px;border-radius:999px">Open my cart</a><button class="bno" type="button" id="stowclose">Done</button></div></div>`;
   document.body.appendChild(wrap); let n=0;
-  wrap.querySelectorAll(".stowbtn").forEach(a=>a.addEventListener("click",()=>{ if(a.classList.contains("done")) return; a.classList.add("done"); a.textContent="Stowed ✓"; n++; $("#stowprog").textContent=`${n} of ${stops.length} stowed`; document.querySelectorAll(".stop .add")[+a.dataset.i]?.classList.add("added"); if(n===stops.length) log("The whole plan is in yer cart. Review the total and pay on Groupon.","ok"); }));
+  wrap.querySelectorAll(".stowbtn").forEach(a=>a.addEventListener("click",()=>{ if(a.classList.contains("done")) return; a.classList.add("done"); a.textContent="Added ✓"; n++; $("#stowprog").textContent=`${n} of ${stops.length} added`; document.querySelectorAll(".stop .add")[+a.dataset.i]?.classList.add("added"); if(n===stops.length) log("The whole plan is in your cart. Review the total and pay on Groupon.","ok"); }));
   $("#stowclose").onclick=()=>wrap.remove(); wrap.addEventListener("click",e=>{ if(e.target===wrap) wrap.remove(); });
 }
 
@@ -525,7 +543,7 @@ function drawMap(){
   if(!window.L) return; initMap();
   if(layer) layer.remove(); layer=L.layerGroup().addTo(map);
   const home=[plan.center.lat,plan.center.lng]; const pts=[home];
-  L.marker(home,{icon:L.divIcon({className:"",html:'<div class="pin home">⚓</div>',iconSize:[26,26],iconAnchor:[13,13]})}).bindTooltip("Home port, "+plan.hotel).addTo(layer);
+  L.marker(home,{icon:L.divIcon({className:"",html:'<div class="pin home">★</div>',iconSize:[26,26],iconAnchor:[13,13]})}).bindTooltip("Your base, "+plan.hotel).addTo(layer);
   const lines=[];
   plan.days.forEach((d,i)=>{ const line=[home]; d.stops.forEach((s,j)=>{ const p=[s.loc.lat,s.loc.lng]; line.push(p); pts.push(p);
       L.marker(p,{icon:L.divIcon({className:"",html:`<div class="pin" style="background:${d.color}">${j+1}</div>`,iconSize:[26,26],iconAnchor:[13,13]})}).bindTooltip(`${fmtDay(d.date)} · ${s.o.experienceTitle||s.o.title}`).addTo(layer); });
@@ -554,7 +572,7 @@ async function initGlobe(){
     const path=d3.geoPath(proj,ctx); ctx.setTransform(G.dpr,0,0,G.dpr,0,0); ctx.clearRect(0,0,G.w,G.h);
     if(G.scale<G.base*1.3){ const [sx,sy]=proj.translate(); const r=G.scale; ctx.save(); ctx.fillStyle="rgba(70,45,15,.16)"; ctx.beginPath(); ctx.ellipse(sx,sy+r*1.07,r*.75,r*.1,0,0,7); ctx.fill();
        ctx.restore(); }
-    ctx.beginPath(); path({type:"Sphere"}); const [cx,cy]=proj.translate(); const g=ctx.createRadialGradient(cx-G.scale*.3,cy-G.scale*.35,G.scale*.1,cx,cy,G.scale); g.addColorStop(0,"#e3d2a8"); g.addColorStop(1,"#c3a670"); ctx.fillStyle=g; ctx.fill();
+    ctx.beginPath(); path({type:"Sphere"}); const [cx,cy]=proj.translate(); const g=ctx.createRadialGradient(cx-G.scale*.3,cy-G.scale*.35,G.scale*.1,cx,cy,G.scale); g.addColorStop(0,"#b9d3d6"); g.addColorStop(1,"#6f9ca8"); ctx.fillStyle=g; ctx.fill();
     ctx.beginPath(); path(grat); ctx.strokeStyle="rgba(58,40,23,.18)"; ctx.lineWidth=.7; ctx.stroke();
     ctx.beginPath(); path(G.land); ctx.fillStyle="#f8efd8"; ctx.fill(); ctx.strokeStyle="rgba(58,40,23,.75)"; ctx.lineWidth=.8; ctx.stroke();
     ctx.beginPath(); path(G.borders); ctx.strokeStyle="rgba(58,40,23,.3)"; ctx.lineWidth=.6; ctx.stroke();
@@ -624,8 +642,8 @@ async function startCrew(){
   const code=Math.random().toString(36).slice(2,8)+Math.random().toString(36).slice(2,6);
   const deck=await buildDeck(); crew={c:code,t:$("#q").value,p:location.hash.slice(1),d:deck};
   store.set("sq-crew-"+code,crew); store.set("sq-active",code); votes=store.get("sq-votes-"+code,{});
-  log("Crew vote opened. Share the link with yer crew.","ok"); renderCrew(); connectRelay();
-  if(btn){btn.disabled=false;btn.textContent="🏴‍☠️ Crew vote is open";} $(".crew")?.scrollIntoView({behavior:"smooth",block:"start"});
+  log("Crew vote open. Share the link with your group.","ok"); renderCrew(); connectRelay();
+  if(btn){btn.disabled=false;btn.textContent="Crew vote is open";} $(".crew")?.scrollIntoView({behavior:"smooth",block:"start"});
 }
 function crewLink(){ return base()+"#crew="+enc({c:crew.c,t:crew.t,d:crew.d}); }
 function connectRelay(){
@@ -641,16 +659,19 @@ function renderCrew(){
   const t=tally(); const names=Object.keys(votes);
   const nameOf=id=>{ const c=candidates.find(x=>x.o.id===id); if(c) return c.o.experienceTitle||c.o.title; const st=plan.days.flatMap(d=>d.stops).find(x=>x.o.id===id); return st?(st.o.experienceTitle||st.o.title):"Option"; };
   const rows=crew.d.map(slot=>{ const [di,si]=slot.k.split("-").map(Number); const d=plan.days[di]; if(!d) return "";
-    const counts=slot.o.map(([id])=>t[slot.k+"|"+id]||0); const max=Math.max(...counts,0); const lead=max>0?counts.indexOf(max):0;
-    const [lid,,,ltitle]=slot.o[lead]; const others=slot.o.length-1;
-    return `<details class="slotrow"><summary><span class="dot" style="background:${d.color}"></span><span class="lead"><small>${d.date.toLocaleDateString("en-US",{weekday:"short"})} · ${SLOT_LABEL[(d.stops[si]||{}).slot]||""}</small>${max>0?"👑 ":""}${esc(ltitle||nameOf(lid))}</span><span class="votes ${max>0?"hot":""}">⚓ ${counts[lead]}${others?` · ${others} more`:""}</span></summary>
-      <div class="alts">${slot.o.map(([id,,,title],i)=>`<div class="optrow ${i===lead&&max>0?"win":""}"><span class="nm">${esc(title||nameOf(id))}</span><span>⚓ ${counts[i]}</span></div>`).join("")}</div></details>`; }).join("");
-  box.innerHTML=`<section class="crew"><div class="crewhead"><div><h3>Crew vote 🏴‍☠️</h3><div class="live" id="livedot">${names.length?names.map(esc).join(", ")+" voted":"Waiting for the crew"}</div></div>
-    <div class="crewbtns"><button class="go" type="button" id="copycrew">Copy crew link</button><button class="ghost" type="button" id="selfvote">Vote</button></div></div>
-    <div class="board">${rows}</div>
-    <details class="paste"><summary>Got a vote link?</summary><div class="crewlink"><input id="pastevote" placeholder="Paste it here" aria-label="Paste a vote link"><button class="ghost" type="button" id="addvote">Add</button></div></details>
-    <input id="crewurl" type="hidden" value="${esc(crewLink())}">
-    <div class="actions" style="justify-content:flex-start"><button class="brassbtn" type="button" id="lock">Lock in the winners</button></div></section>`;
+    const counts=slot.o.map(([id])=>t[slot.k+"|"+id]||0); const max=Math.max(...counts,0); const lead=max>0?counts.indexOf(max):-1; const denom=Math.max(1,names.length);
+    return `<div class="vslot"><div class="vhead"><span class="dot" style="background:${d.color}"></span>${d.date.toLocaleDateString("en-US",{weekday:"short"})} · ${SLOT_LABEL[(d.stops[si]||{}).slot]||""}</div>
+      ${slot.o.map(([id,,,title],i)=>`<div class="vopt ${i===lead?"win":""}"><div class="vname">${i===lead?"★ ":""}${esc(title||nameOf(id))}${i===0?' <em>current</em>':""}</div><div class="vbar"><i style="width:${Math.round(counts[i]/denom*100)}%;background:${i===lead?"var(--wax)":d.color}"></i></div><div class="vcount">${counts[i]}</div></div>`).join("")}</div>`; }).join("");
+  const voted=names.length, crewSize=plan.brief.group, pct=Math.min(1,voted/crewSize), C2=2*Math.PI*26;
+  const decided=crew.d.filter(slot=>slot.o.some(([id])=>(t[slot.k+"|"+id]||0)>0)).length;
+  box.innerHTML=`<section class="crew"><div class="crewhead">
+      <div class="ring"><svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="26" fill="none" stroke="var(--faint)" stroke-width="6"/><circle cx="32" cy="32" r="26" fill="none" stroke="var(--wax)" stroke-width="6" stroke-linecap="round" stroke-dasharray="${(C2*pct).toFixed(1)} ${C2.toFixed(1)}" transform="rotate(-90 32 32)"/></svg><b>${voted}/${crewSize}</b></div>
+      <div class="crewtitle"><h3>Crew vote</h3><div class="live" id="livedot">${voted?names.map(esc).join(", ")+" voted":"Waiting for the crew"} · ${decided}/${crew.d.length} stops have votes</div></div>
+      <div class="crewbtns"><button class="go" type="button" id="copycrew">Copy crew link</button><button class="ghost" type="button" id="selfvote">Vote</button></div></div>
+    <div class="vgrid">${rows}</div>
+    <div class="crewfoot"><details class="paste"><summary>Got a vote link?</summary><div class="crewlink"><input id="pastevote" placeholder="Paste it here" aria-label="Paste a vote link"><button class="ghost" type="button" id="addvote">Add</button></div></details>
+    <button class="brassbtn" type="button" id="lock">Lock in the winners</button></div>
+    <input id="crewurl" type="hidden" value="${esc(crewLink())}"></section>`;
   $("#copycrew").onclick=async()=>{ try{await navigator.clipboard.writeText(crewLink());toast("Crew link copied");}catch{ prompt("Copy the crew link",crewLink()); } };
   $("#selfvote").onclick=()=>openDeck({c:crew.c,t:crew.t,d:crew.d},true);
   $("#addvote").onclick=()=>{ const v=$("#pastevote").value; const m=v.match(/#votes=([\w-]+)/); if(!m){toast("That isn't a vote link");return;} try{ const o=dec(m[1]); if(o.c!==crew.c){toast("That vote is for another trip");return;} addVotes(o,true); renderCrew(); }catch{toast("That link looks broken");} };
@@ -661,19 +682,19 @@ async function lockWinners(){
   for(const slot of crew.d){ const [di,si]=slot.k.split("-").map(Number); const counts=slot.o.map(([id])=>t[slot.k+"|"+id]||0); const max=Math.max(...counts); if(max<=0) continue; const w=counts.indexOf(max); if(w===0) continue;
     const [id,optId,qty]=slot.o[w]; try{ const o=await readOffer(id,plan.brief.city); const opt=o.options.find(x=>x.id===optId)||o.options[0]; const cur=plan.days[di].stops[si];
       plan.days[di].stops[si]={o,meta:cur.meta,loc:nearestLoc(o,cur.loc||{lat:C.lat,lng:C.lng},C.cities),pick:{opt,qty:+qty,total:opt.price.amountMinor*(+qty)},rules:rulesOf(o,opt),slot:cur.slot}; changed++; }catch{} }
-  log(changed?`The crew has spoken: ${changed} stop${changed>1?"s":""} changed.`:"The crew kept the captain's plan.","ok");
+  log(changed?`The group picked ${changed} new stop${changed>1?"s":""}.`:"The group kept the original plan.","ok");
   writeHash(); crew.p=location.hash.slice(1); store.set("sq-crew-"+crew.c,crew); render(); toast("Winners locked in");
 }
 /* the deck a crew member sees */
 async function openDeck(session,isCaptain){
   const wrap=document.createElement("div"); wrap.className="deckwrap"; wrap.setAttribute("role","dialog"); wrap.setAttribute("aria-label","Crew vote");
-  wrap.innerHTML=`<div class="deckpanel"><h2>Ahoy, crew mate!</h2><p>${esc(parse(session.t).city)} trip. Swipe right ⚓ to keep, left 🌊 to skip.</p><input id="crewname" placeholder="Yer name" maxlength="20" autocomplete="given-name"><div class="deckbtns" style="margin-top:12px"><button class="byes" id="startswipe" type="button">Start</button></div></div>`;
+  wrap.innerHTML=`<div class="deckpanel"><h2>Your vote</h2><p>${esc(parse(session.t).city)} trip. Swipe right to keep a stop, left to skip it.</p><input id="crewname" placeholder="Your name" maxlength="20" autocomplete="given-name"><div class="deckbtns" style="margin-top:12px"><button class="byes" id="startswipe" type="button">Start</button></div></div>`;
   document.body.appendChild(wrap);
   const b=parse(session.t); const C=CITIES[b.city];
   const cards=[]; session.d.forEach(slot=>{ const [di]=slot.k.split("-").map(Number); const date=new Date(b.start); date.setDate(date.getDate()+di); slot.o.forEach(([id,opt,qty],i)=>cards.push({k:slot.k,id,opt,qty:+qty,date,i,n:slot.o.length})); });
   const offers=pool([...new Set(cards.map(c=>c.id))],4,id=>readOffer(id,b.city));
   $("#startswipe").onclick=async()=>{ const name=($("#crewname").value||"").trim(); if(!name){ $("#crewname").focus(); return; }
-    const panel=wrap.querySelector(".deckpanel"); panel.innerHTML=`<h2>${esc(name)}'s vote</h2><div class="deck" id="deck"></div><div class="deckbtns"><button class="bno" id="bno" type="button">🌊 Skip</button><button class="byes" id="byes" type="button">⚓ Keep</button></div><div class="deckprog" id="prog"></div>`;
+    const panel=wrap.querySelector(".deckpanel"); panel.innerHTML=`<h2>${esc(name)}'s vote</h2><div class="deck" id="deck"></div><div class="deckbtns"><button class="bno" id="bno" type="button">Skip</button><button class="byes" id="byes" type="button">Keep</button></div><div class="deckprog" id="prog"></div>`;
     const ids=[...new Set(cards.map(c=>c.id))]; const got=await offers; const byId={}; ids.forEach((id,i)=>byId[id]=got[i]);
     const deck=cards.filter(c=>byId[c.id]); const v={}; let idx=0;
     const show=()=>{ $("#prog").textContent=`${Math.min(idx+1,deck.length)} of ${deck.length}`; const host=$("#deck"); host.innerHTML="";
@@ -687,9 +708,9 @@ async function openDeck(session,isCaptain){
     $("#bno").onclick=()=>choose(false); $("#byes").onclick=()=>choose(true);
     document.addEventListener("keydown",function k(e){ if(!document.body.contains(wrap)){document.removeEventListener("keydown",k);return;} if(e.key==="ArrowRight")choose(true); if(e.key==="ArrowLeft")choose(false); });
     const finish=async()=>{ const msg={c:session.c,n:name,v}; let live=false; try{ const r=await fetch(RELAY(session.c),{method:"POST",body:JSON.stringify(msg)}); live=r.ok; }catch{}
-      if(isCaptain){ addVotes(msg,false); renderCrew(); wrap.remove(); toast("Yer vote is in"); return; }
+      if(isCaptain){ addVotes(msg,false); renderCrew(); wrap.remove(); toast("Your vote is in"); return; }
       const link=base()+"#votes="+enc(msg);
-      panel.innerHTML=`<h2>Votes cast, ${esc(name)}!</h2><p>${live?"Yer captain can see them already.":"The live relay didn't answer, so send yer captain this link."} To be safe, drop this link in the group chat too:</p><input readonly value="${esc(link)}" id="votelink" style="font:13px var(--mono)"><div class="deckbtns" style="margin-top:12px"><button class="byes" id="copyvote" type="button">Copy my vote link</button></div><p style="margin-top:14px"><a href="${esc(base())}" style="color:var(--brass)">Plan yer own side quest →</a></p>`;
+      panel.innerHTML=`<h2>Thanks, ${esc(name)}!</h2><p>${live?"Your votes are in.":"The live relay didn't answer, so send this link to the organiser."} To be safe, drop it in the group chat too:</p><input readonly value="${esc(link)}" id="votelink" style="font:13px var(--mono)"><div class="deckbtns" style="margin-top:12px"><button class="byes" id="copyvote" type="button">Copy my vote link</button></div><p style="margin-top:14px"><a href="${esc(base())}" style="color:var(--brass)">Plan your own side quest →</a></p>`;
       $("#copyvote").onclick=async()=>{ try{await navigator.clipboard.writeText(link);toast("Vote link copied");}catch{ $("#votelink").select(); } }; };
     show(); };
 }
@@ -716,8 +737,8 @@ function drawTrail(){
     d+=` C ${x0} ${y0+90}, ${swing} ${mid-80}, ${swing} ${mid} S ${x1} ${y1-90}, ${x1} ${y1}`; }
   svg.innerHTML=`<path id="trailpath" d="${d}"/>`;
   const path=$("#trailpath"); const L=path.getTotalLength(); const g=[]; let side=1;
-  for(let l=30;l<L-10;l+=30){ const p=path.getPointAtLength(l), q=path.getPointAtLength(Math.min(L,l+1)); const ang=Math.atan2(q.y-p.y,q.x-p.x); const nx=-Math.sin(ang)*6*side, ny=Math.cos(ang)*6*side; const deg=ang*180/Math.PI+90;
-    g.push(`<g class="fp" data-y="${(p.y).toFixed(0)}" transform="translate(${(p.x+nx).toFixed(1)} ${(p.y+ny).toFixed(1)}) rotate(${deg.toFixed(0)})"><ellipse cx="0" cy="1.5" rx="2.6" ry="4.2"/><ellipse cx="0" cy="-4.2" rx="2.1" ry="2"/></g>`); side*=-1; }
+  for(let l=36;l<L-10;l+=38){ const p=path.getPointAtLength(l), q=path.getPointAtLength(Math.min(L,l+1)); const ang=Math.atan2(q.y-p.y,q.x-p.x); const nx=-Math.sin(ang)*9*side, ny=Math.cos(ang)*9*side; const deg=ang*180/Math.PI+90;
+    const sk=side>0?1:-1; g.push(`<g class="fp" data-y="${(p.y).toFixed(0)}" transform="translate(${(p.x+nx).toFixed(1)} ${(p.y+ny).toFixed(1)}) rotate(${(deg+sk*7).toFixed(0)}) scale(${sk*1.7} 1.7)"><ellipse cx=".3" cy="-2.2" rx="2.7" ry="3.6"/><ellipse cx="-.2" cy="4.6" rx="1.9" ry="2.2"/><circle cx="-1.6" cy="-7" r=".8"/><circle cx="-.2" cy="-7.6" r=".85"/><circle cx="1.3" cy="-7.3" r=".75"/><circle cx="2.5" cy="-6.4" r=".6"/></g>`); side*=-1; }
   svg.insertAdjacentHTML("beforeend",g.join("")); fps=[...svg.querySelectorAll(".fp")]; revealSteps();
 }
 function revealSteps(){ const host=$("#result"); if(!host||!fps.length) return; const top=host.getBoundingClientRect().top; const limit=innerHeight*0.85-top;
@@ -735,7 +756,7 @@ G.ready=initGlobe(); initMap();
 const h=location.hash.slice(1);
 if(h.startsWith("crew=")){ try{ const sess=dec(h.slice(5)); openDeck(sess,false); }catch{ toast("That crew link looks broken"); } }
 else if(h.startsWith("votes=")){ try{ const m=dec(h.slice(6)); const c=store.get("sq-crew-"+m.c,null);
-  if(!c){ toast("Open this on the device where ye planned the trip"); } else { const vs=store.get("sq-votes-"+m.c,{}); vs[m.n]=m.v; store.set("sq-votes-"+m.c,vs); store.set("sq-active",m.c); location.hash=c.p; location.reload(); } }catch{ toast("That vote link looks broken"); } }
+  if(!c){ toast("Open this on the device where you planned the trip"); } else { const vs=store.get("sq-votes-"+m.c,{}); vs[m.n]=m.v; store.set("sq-votes-"+m.c,vs); store.set("sq-active",m.c); location.hash=c.p; location.reload(); } }catch{ toast("That vote link looks broken"); } }
 else if(location.hash.length>10){ flyGlobe(parse(decodeURIComponent(escape(atob(location.hash.slice(1)))).includes("\"t\"")?JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1))))).t:"").city).then(()=>loadHash()); }
 })();
 </script>
