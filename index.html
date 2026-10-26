@@ -214,6 +214,19 @@ footer{position:relative;z-index:1;margin-top:60px;font-size:12.5px;color:var(--
 .freeday b{font:600 italic 22px var(--display)}
 .freeday span{font-size:14.5px;color:var(--ink2)}
 .freeday .tip{font-size:13.5px}
+
+@media (max-width:600px){
+  .stage{height:500px;min-height:0}
+  textarea{min-height:150px;font-size:21px}
+  .built{display:none}
+  .days{gap:50px;margin-top:50px}
+  .stops{gap:26px}
+  .summary{margin-top:56px}
+  .crew{padding:18px}
+  .crewhead{gap:12px}
+  .deck{height:440px}
+  .stop{--tilt:-.5deg!important;width:calc(100% - 6px)}
+}
 .toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:12px 20px;border-radius:999px;font:600 15px var(--body);z-index:3000}
 </style>
 </head>
