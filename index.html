@@ -243,6 +243,20 @@ html,body{overflow-x:clip}
 .stage-title h1.retro{font-size:clamp(46px,7.2vw,104px);-webkit-text-stroke:1.6px var(--ink)}
 .stage-title .kicker{font-size:clamp(16px,1.6vw,20px);margin:22px auto 0;max-width:34ch}
 .alt{left:16px;bottom:20px}
+
+/* calm pass: sky only in the hero, quiet neutral behind the plan */
+:root{--calm:#f7f5f0}
+body{background:var(--calm)!important}
+body::before,body::after{display:none}
+.hero-band{background:linear-gradient(180deg,var(--sky1) 0,var(--sky2) 55%,#efe6cf 82%,var(--calm) 100%);padding-bottom:40px}
+.hero-band::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(22% 9% at 80% 12%,rgba(255,255,255,.95),transparent 72%),radial-gradient(16% 7% at 86% 16%,rgba(255,255,255,.9),transparent 70%),radial-gradient(26% 10% at 12% 46%,rgba(255,255,255,.85),transparent 72%),radial-gradient(30% 12% at 90% 60%,rgba(255,255,255,.75),transparent 72%);animation:drift 60s ease-in-out infinite alternate}
+.hero-band::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.45;background-image:radial-gradient(rgba(255,255,255,.9) .7px,transparent .9px);background-size:5px 5px;mix-blend-mode:soft-light;-webkit-mask:linear-gradient(#000 70%,transparent);mask:linear-gradient(#000 70%,transparent)}
+.hero-band>.wrap{position:relative;z-index:1}
+.desk{margin-top:-28px;position:relative;z-index:2}
+.stop{box-shadow:0 1px 2px rgba(0,0,0,.06),0 10px 24px rgba(30,30,40,.10)}
+.stop+.stop::before{border-top-color:#d9d4c8}
+.tot,.tag,.crew{box-shadow:0 1px 2px rgba(0,0,0,.05),0 8px 22px rgba(30,30,40,.08)}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 18px;border-radius:999px;font:600 14px var(--body);z-index:3000}
 </style>
 </head>
