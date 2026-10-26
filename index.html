@@ -287,35 +287,62 @@ const CITIES = {
 };
 /* vibes -> searches. slot: when it fits. */
 const VIBES = {
-  active:{words:["active","adventure","sport","outdoors","outdoor","move"],q:[["escape room","day"],["bike rental","morning"],["axe throwing","day"],["rock climbing","day"],["kayaking","morning"],["go karts","day"]]},
-  party:{words:["party","partying","nightlife","drinks","bar","club","dance","bachelorette","bachelor"],q:[["comedy club","night"],["speakeasy","night"],["happy hour","evening"],["drag brunch","brunch"],["karaoke","night"],["rooftop bar","night"]]},
-  food:{words:["food","foodie","eat","eating","dinner","brunch","restaurant","drinks"],q:[["bottomless brunch","brunch"],["steakhouse","dinner"],["sushi making class","evening"],["food tour","day"],["wine tasting","evening"],["tasting menu","dinner"]]},
-  culture:{words:["culture","museum","art","history","show","theater","theatre"],q:[["museum tour","day"],["walking tour","morning"],["broadway show","night"]]},
-  relax:{words:["spa","relax","massage","chill","wellness"],q:[["spa day","day"],["couples massage","day"]]},
+  active:{words:["active","adventure","adventurous","sport","sports","outdoors","outdoor","move","hiking","hike","bike","biking","kayak","water","beach","climbing","golf","fitness"],q:[["escape room","day"],["bike rental","morning"],["axe throwing","day"],["rock climbing","day"],["kayaking","morning"],["go karts","day"]]},
+  party:{words:["party","partying","nightlife","drinks","bar","bars","club","clubs","dance","dancing","bachelorette","bachelor","comedy","music","concert","live music","cocktails","night out"],q:[["comedy club","night"],["speakeasy","night"],["happy hour","evening"],["drag brunch","brunch"],["karaoke","night"],["rooftop bar","night"]]},
+  food:{words:["food","foodie","eat","eating","dinner","brunch","restaurant","restaurants","drinks","seafood","wine","beer","brewery","breweries","pizza","bbq","sushi","tasting","cooking"],q:[["bottomless brunch","brunch"],["steakhouse","dinner"],["sushi making class","evening"],["food tour","day"],["wine tasting","evening"],["tasting menu","dinner"]]},
+  culture:{words:["culture","cultural","museum","museums","art","arts","history","historic","show","shows","theater","theatre","architecture","sightseeing","tour","tours"],q:[["museum tour","day"],["walking tour","morning"],["broadway show","night"]]},
+  relax:{words:["spa","relax","relaxing","massage","chill","wellness","romantic","pamper"],q:[["spa day","day"],["couples massage","day"]]},
   family:{words:["kids","family","children"],q:[["family fun","day"],["aquarium","day"],["trampoline park","day"],["mini golf","evening"],["family dinner","dinner"],["pancake breakfast","brunch"]]}
 };
 const MONTHS=["january","february","march","april","may","june","july","august","september","october","november","december"];
 const NUMW={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,twelve:12};
 
+const DYN={};
+const cityInfo=n=>CITIES[n]||DYN[n]||null;
+const STOP=new Set("the a an and or but with for from to in on at of my our we us me i im it its this that these those is are be going go want like love loves into about around each per person people friends trip weekend days day nights night month next plan please some good great best fun stuff things thing cheap budget total dollars usd bucks just only also really very lots little bit long nice solo anniversary honeymoon bachelorette kids kid family families love loves mom dad partner wife husband girlfriend boyfriend sister brother friend romantic going around maybe cool fancy chill time stay staying visit visiting".split(" "));
 function parse(text){
-  const t=" "+text.toLowerCase().replace(/[!?.,]/g," ")+" ";
-  let city="New York"; for(const [k,v] of Object.entries(CITIES)) if(v.aliases.some(a=>t.includes(" "+a.trim()+" ")||t.includes(" "+a.trim()))) {city=k;break;}
-  let group=null;
-  let m=t.match(/(\d+|one|two|three|four|five|six|seven|eight|nine|ten|twelve)\s+(of us|people|friends|guys|girls|adults|persons|pax)/);
-  if(m){group=NUMW[m[1]]||+m[1]; if(m[2]==="friends"&&/\b(me and|with my|me \+)/.test(t)) group+=1;}
-  if(!group&&/(me and my|my partner|couple|for two|date)/.test(t)) group=2;
-  if(!group) group=2;
-  group=Math.max(1,Math.min(group,12));
+  const raw=" "+text+" "; const t=" "+text.toLowerCase().replace(/[!?.,;:()"]/g," ").replace(/\s+/g," ")+" ";
+  // city: known list first, then "in/to/visiting <Proper Name>"
+  let city=null, cityGuess=false;
+  for(const [k,v] of Object.entries(CITIES)) if(v.aliases.some(a=>t.includes(" "+a.trim()+" "))) {city=k;break;}
+  if(!city){ const m=raw.match(/\b(?:in|to|visit|visiting|around|near|explore|exploring)\s+((?:[A-Z][a-zA-Z.'-]+)(?:\s+[A-Z][a-zA-Z.'-]+){0,2})(?:,?\s+([A-Z]{2})\b)?/);
+    if(m){ const cand=m[1].trim(); if(!MONTHS.includes(cand.toLowerCase())&&!DOW.includes(cand.toLowerCase())){ city=cand; cityGuess=true; } } }
+  if(!city){ const m2=raw.match(/^\s*([A-Z][a-zA-Z.'-]+(?:\s+[A-Z][a-zA-Z.'-]+)?)(?=[\s,])/); const w=m2&&m2[1]; if(w&&!/^(I|Im|I'm|Me|My|We|Our|It|Its|It's|Family|Weekend|Solo|Romantic|Bachelorette|Birthday|Trip|A|The|Plan|Help|Find|Hi|Hey)$/i.test(w.split(" ")[0])&&!MONTHS.includes(w.toLowerCase())){ city=w; cityGuess=true; } }
+  if(!city) city="New York";
+  // group
+  let group=null; let m;
+  if((m=t.match(/(?:me|i) and (\d+|one|two|three|four|five|six|seven|eight|nine|ten) (?:friends|others|people|mates|colleagues|coworkers)/))) group=(NUMW[m[1]]||+m[1])+1;
+  else if((m=t.match(/(\d+|one|two|three|four|five|six|seven|eight|nine|ten|twelve)\s+(?:of us|people|friends|guys|girls|adults|persons|pax|travelers|travellers)/))){ group=NUMW[m[1]]||+m[1]; }
+  else if((m=t.match(/(?:family|party|group) of (\d+|two|three|four|five|six|seven|eight)/))) group=NUMW[m[1]]||+m[1];
+  if(!group&&/\b(solo|alone|just me|by myself)\b/.test(t)) group=1;
+  if(!group&&/(me and my|my partner|my wife|my husband|my girlfriend|my boyfriend|my mom|my dad|my sister|my brother|my friend\b|couple|for two|date night|honeymoon|anniversary)/.test(t)) group=2;
+  if((m=t.match(/with (\d+|one|two|three|four) kids/))&&group&&group<3) group+=NUMW[m[1]]||+m[1];
+  if(!group) group=2; group=Math.max(1,Math.min(group,12));
+  // when
   const now=new Date(); let month=null; MONTHS.forEach((mm,i)=>{ if(t.includes(" "+mm+" ")||t.includes(" "+mm.slice(0,3)+" ")) month=i; });
-  let start; if(month==null){ start=new Date(now); start.setDate(now.getDate()+((4-now.getDay()+7)%7||7)); }
-  else { const y=(month<now.getMonth()||(month===now.getMonth()&&now.getDate()>20))?now.getFullYear()+1:now.getFullYear(); const d=new Date(y,month,1); let thu=0; for(let i=1;i<=31;i++){d.setDate(i); if(d.getDay()===4){thu++; if(thu===2){start=new Date(d);break;}}} }
-  let days=/\bweekend\b/.test(t)&&!/long weekend/.test(t)?3:4; const dm=t.match(/(\d+|two|three|four|five)\s+(days|nights)/); if(dm) days=Math.max(1,Math.min(5,(NUMW[dm[1]]||+dm[1])+(dm[2]==="nights"?1:0)));
-  if(days===3) start.setDate(start.getDate()+1);
-  let budget=null; const bm=t.match(/\$\s?(\d{2,4})|(\d{2,4})\s?(dollars|usd|bucks)/); if(bm) budget=+(bm[1]||bm[2]);
-  const vibes=Object.entries(VIBES).filter(([k,v])=>v.words.some(w=>t.includes(" "+w))).map(([k])=>k);
+  let start=null; const dm2=t.match(/\b(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)\s+(\d{1,2})(?:st|nd|rd|th)?\b/);
+  if(dm2){ const mi=MONTHS.findIndex(x=>x.startsWith(dm2[1].slice(0,3))); let y=now.getFullYear(); const d=new Date(y,mi,+dm2[2]); if(d<now) d.setFullYear(y+1); start=d; }
+  else if(/next weekend/.test(t)){ start=new Date(now); start.setDate(now.getDate()+((5-now.getDay()+7)%7||7)+7); }
+  else if(/this weekend/.test(t)){ start=new Date(now); start.setDate(now.getDate()+((5-now.getDay()+7)%7||7)); }
+  else if(/next month/.test(t)){ const d=new Date(now.getFullYear(),now.getMonth()+1,1); month=d.getMonth(); }
+  if(!start){ if(month==null){ start=new Date(now); start.setDate(now.getDate()+((4-now.getDay()+7)%7||7)); }
+    else { const y=(month<now.getMonth()||(month===now.getMonth()&&now.getDate()>20))?now.getFullYear()+1:now.getFullYear(); const d=new Date(y,month,1); let thu=0; for(let i=1;i<=31;i++){d.setDate(i); if(d.getDay()===4){thu++; if(thu===2){start=new Date(d);break;}}} } }
+  let days=/\bweekend\b/.test(t)&&!/long weekend/.test(t)?3:4; const dm=t.match(/(\d+|two|three|four|five|six|seven)\s*-?\s*(days|day|nights|night)/); if(dm) days=Math.max(1,Math.min(5,(NUMW[dm[1]]||+dm[1])+(/night/.test(dm[2])?1:0)));
+  if(days===3&&!dm2) start.setDate(start.getDate()+1);
+  // budget: per person unless it says total
+  let budget=null; const bm=t.match(/\$\s?(\d{2,5})|(\d{2,5})\s?(?:dollars|usd|bucks)|budget(?: of| is|:)?\s+(\d{2,5})|(\d{2,5}) (?:each|per person|pp|a head)/); if(bm){ budget=+(bm[1]||bm[2]||bm[3]||bm[4]); if(/total|in total|altogether|for all|for everyone|for the group/.test(t)) budget=Math.round(budget/group); }
+  const vibes=Object.entries(VIBES).filter(([k,v])=>v.words.some(w=>t.includes(" "+w+" ")||t.includes(" "+w+"s "))).map(([k])=>k);
   if(!vibes.length) vibes.push("food","active","party");
+  // extra keywords the vibes don't cover become their own searches
+  const known=new Set(Object.values(VIBES).flatMap(v=>v.words)); const cityWords=new Set(city.toLowerCase().split(" "));
+  const keep=w=>/^[a-z-]+$/.test(w)&&w.length>2&&!STOP.has(w)&&!cityWords.has(w)&&!MONTHS.some(mm=>mm.startsWith(w.slice(0,3))&&w.length<=9)&&!DOW.includes(w)&&!/\d/.test(w)&&!NUMW[w];
+  const toks=t.trim().split(" "); const extras=[]; const seen=new Set();
+  for(let i=0;i<toks.length;i++){ const w=toks[i], n=toks[i+1];
+    if(keep(w)&&n&&keep(n)&&!known.has(w)){ const ph=w+" "+n; if(!seen.has(ph)){ extras.push(ph); seen.add(w); seen.add(n); seen.add(ph); } i++; continue; }
+    if(keep(w)&&!known.has(w)&&w.length>3&&!seen.has(w)){ extras.push(w); seen.add(w); } }
+  extras.splice(3);
   const occasion=/\b(\d\d)(th|st|nd|rd)\b|birthday|bday/.test(t)?"birthday":/bachelor/.test(t)?"bachelorette":null;
-  return {city,group,start,days,budget,vibes,occasion};
+  return {city,cityGuess,group,start,days,budget,vibes,occasion,extras};
 }
 
 /* ---------- API ---------- */
@@ -391,15 +418,27 @@ const fmtDay=d=>d.toLocaleDateString("en-US",{weekday:"short",day:"numeric",mont
 
 /* ---------- planner ---------- */
 async function planTrip(text,fly){
-  brief=parse(text); const C=CITIES[brief.city]; const center={lat:C.lat,lng:C.lng};
-  $("#chips").innerHTML=[["City",brief.city],["Group",brief.group+" people"],["Dates",fmtDay(brief.start)+" + "+(brief.days-1)+" days"],["Budget",brief.budget?("$"+brief.budget+" each"):"not set"],["Vibe",brief.vibes.join(", ")],...(brief.occasion?[["Occasion",brief.occasion]]:[])].map(([k,v])=>`<span class="chip"><b>${k}</b>${esc(v)}</span>`).join("");
-  $("#log").innerHTML=""; reads=0;
-  log(`Got it: ${brief.group} people, ${brief.city}, ${brief.days} days from ${fmtDay(brief.start)}, vibe ${brief.vibes.join(" + ")}.`);
+  brief=parse(text); $("#log").innerHTML=""; reads=0;
+  if(!cityInfo(brief.city)){
+    log(`Looking up ${brief.city} on LivingSocial…`);
+    const r=await search("things to do in "+brief.city,brief.city,{limit:8}).catch(()=>({offers:[]}));
+    const offs=await pool((r.offers||[]).slice(0,6).map(o=>o.id),4,id=>readOffer(id,brief.city));
+    const lc=brief.city.toLowerCase(); const locs=offs.flatMap(o=>(o?.locations||[]).filter(l=>l.lat&&(l.city||"").toLowerCase()===lc));
+    if(!locs.length){ log(`I couldn't find live deals in ${brief.city}. LivingSocial covers US cities, so try one of those.`,"drop"); toast(`No live deals found in ${brief.city}`); $("#stage").classList.remove("planned"); return; }
+    const med=a=>a.sort((x,y)=>x-y)[a.length>>1];
+    DYN[brief.city]={lat:med(locs.map(l=>l.lat)),lng:med(locs.map(l=>l.lng)),cities:[lc],hotel:"downtown",aliases:[lc]};
+    log(`Found ${brief.city}.`,"ok"); if(!fly) fly=flyGlobe(brief.city);
+  } else if(!fly) fly=flyGlobe(brief.city);
+  const C=cityInfo(brief.city); const center={lat:C.lat,lng:C.lng};
+  $("#chips").innerHTML=[["City",brief.city],["Group",brief.group+" people"],["Dates",fmtDay(brief.start)+" + "+(brief.days-1)+" days"],["Budget",brief.budget?("$"+brief.budget+" each"):"not set"],["Vibe",[...brief.vibes,...(brief.extras||[])].join(", ")],...(brief.occasion?[["Occasion",brief.occasion]]:[])].map(([k,v])=>`<span class="chip"><b>${k}</b>${esc(v)}</span>`).join("");
+  log(`Got it: ${brief.group} ${brief.group===1?"person":"people"}, ${brief.city}, ${brief.days} days from ${fmtDay(brief.start)}, into ${[...brief.vibes,...(brief.extras||[])].join(", ")}${brief.budget?", about $"+brief.budget+" each":""}.`);
   const tripDays=Array.from({length:brief.days},(_,i)=>{const d=new Date(brief.start);d.setDate(d.getDate()+i);return d;});
   const tripEnd=tripDays[tripDays.length-1];
   // searches
   const qs=[]; brief.vibes.forEach(v=>VIBES[v].q.forEach(([q,slot])=>qs.push({q,slot,vibe:v})));
   if(brief.occasion==="birthday") qs.push({q:"birthday dinner",slot:"dinner",vibe:"food"});
+  const NIGHTY=/(bar|pub|club|concert|show|comedy|music|jazz|karaoke)/, FOODY=/(food|seafood|steak|sushi|pizza|taco|bbq|wine|beer|brew|dinner|lunch|oyster|lobster|crab|ramen|burger|cuisine)/;
+  (brief.extras||[]).forEach(w=>qs.push({q:w,slot:FOODY.test(w)?"dinner":NIGHTY.test(w)?"night":"day",vibe:"extra"}));
   log(`Searching ${qs.length} kinds of plans in ${brief.city}…`);
   const found=new Map();
   await pool(qs,3,async s=>{ const r=await search(s.q+" in "+brief.city,brief.city); const n=(r.offers||[]).length; log(`"${s.q}": ${n} live offers`, n?"ok":"drop"); (r.offers||[]).forEach((o,rank)=>{ if(!found.has(o.id)) found.set(o.id,{...s,rank,summary:o}); }); });
@@ -526,7 +565,7 @@ async function openSwaps(card){
   let pool1=candidates.filter(c=>!usedIds.has(c.o.id)&&c.meta.slot===s.meta.slot&&dist(c.loc,s.loc)<3000);
   try{ const r=await search(s.meta.q,plan.brief.city,{near:`${s.loc.lat},${s.loc.lng},1.5km`,limit:6}); const ids=(r.offers||[]).map(o=>o.id).filter(id=>!usedIds.has(id)&&!pool1.some(c=>c.o.id===id));
     const offs=await pool(ids,4,id=>readOffer(id,plan.brief.city));
-    offs.forEach((o,i)=>{ if(!o||!o.buy?.available||o.bookable) return; const loc=nearestLoc(o,s.loc,CITIES[plan.brief.city].cities); const pick=pickOption(o,plan.brief.group); if(!loc||!pick) return; const rules=rulesOf(o,pick.opt); if(rules.allow&&!rules.allow.includes(plan.days[di].date.getDay())) return; pool1.push({o,meta:{...s.meta},loc,pick,rules,per:pick.total/plan.brief.group}); candidates.push(pool1[pool1.length-1]); });
+    offs.forEach((o,i)=>{ if(!o||!o.buy?.available||o.bookable) return; const loc=nearestLoc(o,s.loc,cityInfo(plan.brief.city).cities); const pick=pickOption(o,plan.brief.group); if(!loc||!pick) return; const rules=rulesOf(o,pick.opt); if(rules.allow&&!rules.allow.includes(plan.days[di].date.getDay())) return; pool1.push({o,meta:{...s.meta},loc,pick,rules,per:pick.total/plan.brief.group}); candidates.push(pool1[pool1.length-1]); });
   }catch(e){}
   pool1=pool1.sort((a,b)=>dist(a.loc,s.loc)-dist(b.loc,s.loc)).slice(0,4);
   if(!pool1.length){ box.innerHTML='<div class="meta">Nothing similar nearby is on sale right now.</div>'; return; }
@@ -610,7 +649,7 @@ function tween(ms,fn){ return new Promise(res=>{ let done=false; const t0=perfor
   const step=()=>{ if(done) return; const k=Math.min(1,(performance.now()-t0)/ms); fn(d3.easeCubicInOut(k)); k<1?requestAnimationFrame(step):fin(); };
   if(document.hidden) return fin(); requestAnimationFrame(step); setTimeout(fin,ms+250); }); }
 async function flyGlobe(cityName){
-  const C=CITIES[cityName]; G.target={lat:C.lat,lng:C.lng,name:cityName};
+  const C=cityInfo(cityName); if(!C) return; G.target={lat:C.lat,lng:C.lng,name:cityName};
   $("#stage").classList.add("planned"); $("#map").classList.remove("on"); G.canvas.style.opacity=1; G.spin=false;
   if(G.ready) await Promise.race([G.ready,sleep(4000)]);
   if(!window.d3||!G.land){ initMap(); map.invalidateSize(); map.setView([C.lat,C.lng],12,{animate:false}); $("#map").classList.add("on"); G.canvas.style.opacity=0; return; }
@@ -626,11 +665,12 @@ async function flyGlobe(cityName){
 /* ---------- share ---------- */
 function writeHash(){ const pk=plan.days.map(d=>d.stops.map(s=>[s.o.id,s.pick.opt.id,s.pick.qty,s.slot].join("~")).join("|")).join(";");
   const st={t:$("#q").value,p:pk}; history.replaceState(null,"","#"+btoa(unescape(encodeURIComponent(JSON.stringify(st))))); }
-async function loadHash(){ try{ const st=JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1))))); $("#q").value=st.t; brief=parse(st.t); const C=CITIES[brief.city];
+async function loadHash(){ try{ const st=JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1))))); $("#q").value=st.t; brief=parse(st.t); let C=cityInfo(brief.city); const lc=brief.city.toLowerCase();
   $("#log").innerHTML=""; log("Opening a shared plan…");
   const days=Array.from({length:brief.days},(_,i)=>{const d=new Date(brief.start);d.setDate(d.getDate()+i);return {date:d,stops:[],color:DAYCOLOR[i%DAYCOLOR.length]};});
   const dayStrs=st.p.split(";");
-  for(const [i,ds] of dayStrs.entries()){ if(!ds||!days[i]) continue; for(const it of ds.split("|")){ const [id,opt,qty,slot]=it.split("~"); try{ const o=await readOffer(id,brief.city); const p=o.options.find(x=>x.id===opt)||o.options[0]; const loc=nearestLoc(o,{lat:C.lat,lng:C.lng},C.cities); days[i].stops.push({o,meta:{slot,q:"",vibe:""},loc,pick:{opt:p,qty:+qty,total:p.price.amountMinor*(+qty)},rules:rulesOf(o,p),slot}); }catch(e){ log("One stop is no longer on sale and was left out.","drop"); } } }
+  for(const [i,ds] of dayStrs.entries()){ if(!ds||!days[i]) continue; for(const it of ds.split("|")){ const [id,opt,qty,slot]=it.split("~"); try{ const o=await readOffer(id,brief.city); const p=o.options.find(x=>x.id===opt)||o.options[0]; const loc=C?nearestLoc(o,{lat:C.lat,lng:C.lng},C.cities):((o.locations||[]).find(l=>(l.city||"").toLowerCase()===lc&&l.lat)||(o.locations||[]).find(l=>l.lat)); days[i].stops.push({o,meta:{slot,q:"",vibe:""},loc,pick:{opt:p,qty:+qty,total:p.price.amountMinor*(+qty)},rules:rulesOf(o,p),slot}); }catch(e){ log("One stop is no longer on sale and was left out.","drop"); } } }
+  if(!C){ const ls=days.flatMap(d=>d.stops.map(x=>x.loc)).filter(Boolean); if(!ls.length) throw 0; const med=a=>a.sort((x,y)=>x-y)[a.length>>1]; DYN[brief.city]={lat:med(ls.map(l=>l.lat)),lng:med(ls.map(l=>l.lng)),cities:[lc],hotel:"downtown",aliases:[lc]}; C=DYN[brief.city]; await flyGlobe(brief.city); }
   plan={brief,days,center:{lat:C.lat,lng:C.lng},hotel:C.hotel}; $("#chips").innerHTML=`<span class="chip"><b>Shared plan</b>${esc(brief.city)}, ${brief.group} people</span>`; log("Shared plan loaded with today's prices.","ok"); render(); return true; }catch(e){ return false; } }
 
 
@@ -642,7 +682,7 @@ let crew=null, votes={}, es=null;
 const RELAY=c=>"https://ntfy.sh/sidequest-"+c;
 const base=()=>location.origin+location.pathname;
 async function buildDeck(){
-  const used=new Set(plan.days.flatMap(d=>d.stops.map(x=>x.o.id))); const C=CITIES[plan.brief.city];
+  const used=new Set(plan.days.flatMap(d=>d.stops.map(x=>x.o.id))); const C=cityInfo(plan.brief.city);
   const deck=[];
   for(const [di,d] of plan.days.entries()) for(const [si,s] of d.stops.entries()){
     let alts=candidates.filter(c=>!used.has(c.o.id)&&c.meta.slot===s.meta.slot&&c.o.merchant!==s.o.merchant&&(!c.rules.allow||c.rules.allow.includes(d.date.getDay()))&&dist(c.loc,s.loc)<4000)
@@ -699,7 +739,7 @@ function renderCrew(){
   $("#lock").onclick=lockWinners;
 }
 async function lockWinners(){
-  const t=tally(); const C=CITIES[plan.brief.city]; let changed=0;
+  const t=tally(); const C=cityInfo(plan.brief.city); let changed=0;
   for(const slot of crew.d){ const [di,si]=slot.k.split("-").map(Number); const counts=slot.o.map(([id])=>t[slot.k+"|"+id]||0); const max=Math.max(...counts); if(max<=0) continue; const w=counts.indexOf(max); if(w===0) continue;
     const [id,optId,qty]=slot.o[w]; try{ const o=await readOffer(id,plan.brief.city); const opt=o.options.find(x=>x.id===optId)||o.options[0]; const cur=plan.days[di].stops[si];
       plan.days[di].stops[si]={o,meta:cur.meta,loc:nearestLoc(o,cur.loc||{lat:C.lat,lng:C.lng},C.cities),pick:{opt,qty:+qty,total:opt.price.amountMinor*(+qty)},rules:rulesOf(o,opt),slot:cur.slot}; changed++; }catch{} }
@@ -711,7 +751,7 @@ async function openDeck(session,isCaptain){
   const wrap=document.createElement("div"); wrap.className="deckwrap"; wrap.setAttribute("role","dialog"); wrap.setAttribute("aria-label","Crew vote");
   wrap.innerHTML=`<div class="deckpanel"><h2>Your vote</h2><p>${esc(parse(session.t).city)} trip. Swipe right to keep a stop, left to skip it.</p><input id="crewname" placeholder="Your name" maxlength="20" autocomplete="given-name"><div class="deckbtns" style="margin-top:12px"><button class="byes" id="startswipe" type="button">Start</button></div></div>`;
   document.body.appendChild(wrap);
-  const b=parse(session.t); const C=CITIES[b.city];
+  const b=parse(session.t); const C=cityInfo(b.city)||{lat:39,lng:-97,cities:[b.city.toLowerCase()]};
   const cards=[]; session.d.forEach(slot=>{ const [di]=slot.k.split("-").map(Number); const date=new Date(b.start); date.setDate(date.getDate()+di); slot.o.forEach(([id,opt,qty],i)=>cards.push({k:slot.k,id,opt,qty:+qty,date,i,n:slot.o.length})); });
   const offers=pool([...new Set(cards.map(c=>c.id))],4,id=>readOffer(id,b.city));
   $("#startswipe").onclick=async()=>{ const name=($("#crewname").value||"").trim(); if(!name){ $("#crewname").focus(); return; }
@@ -770,9 +810,10 @@ function revealSteps(){ const host=$("#result"); if(!host||!fps.length) return; 
   for(const f of fps){ if(+f.dataset.y<limit) f.classList.add("on"); } }
 window.addEventListener("scroll",revealSteps,{passive:true});
 window.addEventListener("resize",()=>{ if(plan) drawTrail(); });
+window.__sq={parse};
 /* ---------- wire up ---------- */
 $("#brief").addEventListener("submit",async e=>{ e.preventDefault(); const b=$("#go"); b.disabled=true; b.textContent="Planning…";
-  const fly=flyGlobe(parse($("#q").value).city);
+  const pb=parse($("#q").value); const fly=cityInfo(pb.city)?flyGlobe(pb.city):null;
   try{ await planTrip($("#q").value,fly); }catch(err){ log("Something went wrong talking to LivingSocial. Try again in a minute.","drop"); }
   b.disabled=false; b.textContent="Plan again"; });
 document.querySelectorAll("[data-ex]").forEach(b=>b.addEventListener("click",()=>{ $("#q").value=b.dataset.ex; $("#q").focus(); }));
