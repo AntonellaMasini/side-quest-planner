@@ -196,6 +196,14 @@ footer{position:relative;z-index:1;margin-top:60px;font-size:12.5px;color:var(--
 .vbar i{display:block;height:100%;border-radius:999px;min-width:0;transition:width .6s ease}
 .vcount{font:600 14px var(--body);text-align:right;font-variant-numeric:tabular-nums}
 .crewfoot{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-top:20px}
+
+.tag label.howto{position:static;width:auto;height:auto;overflow:visible;clip:auto;display:grid;gap:4px}
+.howto b{font:600 italic 24px/1.1 var(--display);color:var(--ink)}
+.howto span{font:400 14.5px/1.5 var(--body);color:var(--ink2);max-width:60ch}
+.tag .row{justify-content:flex-end;order:5}
+.tag .examples{order:4}
+.tag .examples::before{content:"Try an example:";font:500 13px var(--body);color:var(--ink2);align-self:center;margin-right:4px}
+.tag .chips{order:6}
 .toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:12px 20px;border-radius:999px;font:600 15px var(--body);z-index:3000}
 </style>
 </head>
@@ -218,10 +226,10 @@ footer{position:relative;z-index:1;margin-top:60px;font-size:12.5px;color:var(--
 <div class="wrap">
   <section class="desk">
     <form class="tag" id="brief">
-      <label for="q"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1v14M3 4h10M5 15h6" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>Where to, and what for?</label>
-      <textarea id="q" placeholder="My 30th! 4 of us, New York in May, active + party + great food, ~$300 each">It's my 30th! 4 of us going to New York in May. We love active stuff, partying, good food and drinks. Around $300 each.</textarea>
+      <label for="q" class="howto"><b>Where to, and what for?</b><span>Tell me who's going, the city, the month, what you're into and a rough budget. I'll find live deals and plan the days. Here's an example to edit or just run:</span></label>
+      <textarea id="q" placeholder="e.g. 4 friends, Chicago in June, food and nightlife, about $200 each">It's my 30th! 4 of us going to New York in May. We love active stuff, partying, good food and drinks. Around $300 each.</textarea>
       <div class="row">
-        <button class="go" id="go" type="submit">Chart the course</button>
+        <button class="go" id="go" type="submit">Plan my trip</button>
         <button class="ghost" id="share" type="button" hidden>Copy share link</button>
       </div>
       <div class="chips" id="chips" aria-live="polite"></div>
@@ -746,10 +754,10 @@ function revealSteps(){ const host=$("#result"); if(!host||!fps.length) return; 
 window.addEventListener("scroll",revealSteps,{passive:true});
 window.addEventListener("resize",()=>{ if(plan) drawTrail(); });
 /* ---------- wire up ---------- */
-$("#brief").addEventListener("submit",async e=>{ e.preventDefault(); const b=$("#go"); b.disabled=true; b.textContent="Charting…";
+$("#brief").addEventListener("submit",async e=>{ e.preventDefault(); const b=$("#go"); b.disabled=true; b.textContent="Planning…";
   const fly=flyGlobe(parse($("#q").value).city);
   try{ await planTrip($("#q").value,fly); }catch(err){ log("Something went wrong talking to LivingSocial. Try again in a minute.","drop"); }
-  b.disabled=false; b.textContent="Chart another course"; });
+  b.disabled=false; b.textContent="Plan again"; });
 document.querySelectorAll("[data-ex]").forEach(b=>b.addEventListener("click",()=>{ $("#q").value=b.dataset.ex; $("#q").focus(); }));
 $("#share").addEventListener("click",async()=>{ try{ await navigator.clipboard.writeText(location.href); toast("Share link copied"); }catch{ prompt("Copy this link",location.href); } });
 G.ready=initGlobe(); initMap();
