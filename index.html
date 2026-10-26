@@ -204,6 +204,16 @@ footer{position:relative;z-index:1;margin-top:60px;font-size:12.5px;color:var(--
 .tag .examples{order:4}
 .tag .examples::before{content:"Try an example:";font:500 13px var(--body);color:var(--ink2);align-self:center;margin-right:4px}
 .tag .chips{order:6}
+
+.days{padding-left:58px}
+@media (max-width:600px){.days{padding-left:38px}}
+.day h2::before{position:absolute;left:-46px;top:50%;transform:translateY(-50%)}
+@media (max-width:600px){.day h2::before{left:-27px}}
+.day h2{position:relative}
+.freeday{display:grid;gap:4px;max-width:620px;border:1px dashed rgba(58,40,23,.3);border-radius:14px;padding:16px 18px;background:rgba(251,246,234,.6)}
+.freeday b{font:600 italic 22px var(--display)}
+.freeday span{font-size:14.5px;color:var(--ink2)}
+.freeday .tip{font-size:13.5px}
 .toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:12px 20px;border-radius:999px;font:600 15px var(--body);z-index:3000}
 </style>
 </head>
@@ -282,7 +292,7 @@ const VIBES = {
   food:{words:["food","foodie","eat","eating","dinner","brunch","restaurant","drinks"],q:[["bottomless brunch","brunch"],["steakhouse","dinner"],["sushi making class","evening"],["food tour","day"],["wine tasting","evening"],["tasting menu","dinner"]]},
   culture:{words:["culture","museum","art","history","show","theater","theatre"],q:[["museum tour","day"],["walking tour","morning"],["broadway show","night"]]},
   relax:{words:["spa","relax","massage","chill","wellness"],q:[["spa day","day"],["couples massage","day"]]},
-  family:{words:["kids","family","children"],q:[["family fun","day"],["aquarium","day"],["trampoline park","day"]]}
+  family:{words:["kids","family","children"],q:[["family fun","day"],["aquarium","day"],["trampoline park","day"],["mini golf","evening"],["family dinner","dinner"],["pancake breakfast","brunch"]]}
 };
 const MONTHS=["january","february","march","april","may","june","july","august","september","october","november","december"];
 const NUMW={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,twelve:12};
@@ -413,14 +423,16 @@ async function planTrip(text,fly){
   const wantSlots=(i,n)=>{ const first=i===0, last=i===n-1; if(n===1) return ["day","dinner","night"]; if(first) return ["evening","night"]; if(last) return ["brunch"]; return i===n-2?["morning","brunch","dinner"]:["day","evening","night"]; };
   const slotOK=(c,slot)=>{ const s=c.meta.slot; if(slot==="brunch") return s==="brunch"; if(slot==="dinner") return s==="dinner"; if(slot==="night") return s==="night"||s==="evening"; if(slot==="evening") return s==="evening"||s==="night"; if(slot==="morning") return s==="morning"||s==="day"; return s==="day"||s==="morning"; };
   plan0=dayPlans; const vibeCount={}; let spent=0; const cap=brief.budget?brief.budget*100*brief.group:Infinity;
-  dayPlans.forEach((dp,i)=>{ let anchor=center;
+  dayPlans.forEach((dp,i)=>{ let anchor=center; dp.why=[];
     for(const slot of wantSlots(i,dayPlans.length)){
       const dow=dp.date.getDay();
+      const lab=SLOT_LABEL[slot].toLowerCase(); const any=candidates.filter(c=>slotOK(c,slot)); const free=any.filter(c=>!used.has(c.o.id)); const okDay=free.filter(c=>!c.rules.allow||c.rules.allow.includes(dow));
+      const why=!any.length?`no ${lab} deals matched your interests`:!free.length?`the ${lab} deals are already on other days`:!okDay.length?`the ${lab} deals aren't valid on ${DOW[dow][0].toUpperCase()+DOW[dow].slice(1)}s`:null;
       const opts=candidates.filter(c=>!used.has(c.o.id)&&slotOK(c,slot)&&(!c.rules.allow||c.rules.allow.includes(dow))&&!(c.rules.notSatAfter6&&dow===6&&(slot==="night"||slot==="evening"))&&!(c.rules.mothersDay&&dp.date.getMonth()===4&&dp.date.getDay()===0&&dp.date.getDate()>=8&&dp.date.getDate()<=14));
       if(Number.isFinite(cap)){ for(let k=opts.length-1;k>=0;k--) if(spent+opts[k].pick.total>cap*1.08) opts.splice(k,1); }
-      if(!opts.length) continue;
+      if(!opts.length){ dp.why.push(why||`the ${lab} deals would go over your budget`); continue; }
       opts.forEach(c=>{ const dd=dist(anchor,c.loc); c._s=c.score+dd/450+(vibeCount[c.meta.vibe]||0)*2.5+(Number.isFinite(cap)?(c.pick.total/(cap/8))*1.5:0)+(dupKind(c,dp)?40:0); });
-      opts.sort((a,b)=>a._s-b._s); const c=opts[0]; if(dupKind(c,dp)) continue;
+      opts.sort((a,b)=>a._s-b._s); const c=opts[0]; if(dupKind(c,dp)){ dp.why.push(`the only ${lab} deals left repeat something already planned`); continue; }
       used.add(c.o.id); vibeCount[c.meta.vibe]=(vibeCount[c.meta.vibe]||0)+1; spent+=c.pick.total;
       dp.stops.push({...c,slot}); anchor={lat:c.loc.lat,lng:c.loc.lng};
       log(`${fmtDay(dp.date)} ${SLOT_LABEL[slot].toLowerCase()}: ${c.o.experienceTitle||c.o.title}${c.rules.allow?" ("+c.rules.notes[0]+")":""}`,"ok");
@@ -476,8 +488,9 @@ function dayHTML(d,i){
   const n=plan.days.length; const label=i===0?"arrival":i===n-1?"last day":(plan.brief.occasion==="birthday"&&i===Math.min(2,n-2))?"the big day":"";
   let prev=plan.center; const cards=d.stops.map((s,j)=>{ const m=dist(prev,s.loc); prev=s.loc; return stopHTML(s,i,j,(j===0?"from your base · ":"")+legText(m)); }).join("");
   const f=d.stops[0]?.loc||plan.center; const stamp=`${esc(plan.brief.city)}<br>${Math.abs(f.lat).toFixed(3)}° ${f.lat>=0?"N":"S"} · ${Math.abs(f.lng).toFixed(3)}° ${f.lng>=0?"E":"W"}`;
-  return `<section class="day" style="--line:${d.color}"><div class="stamp">${stamp}</div><h2>${d.date.toLocaleDateString("en-US",{weekday:"long",day:"numeric",month:"long"})} ${label?`<small>${label}</small>`:""}</h2><div class="stops">${cards||'<div class="meta">A free day. Nothing on sale fit this day, so it stays open.</div>'}</div></section>`;
+  return `<section class="day" style="--line:${d.color}"><div class="stamp">${stamp}</div><h2>${d.date.toLocaleDateString("en-US",{weekday:"long",day:"numeric",month:"long"})} ${label?`<small>${label}</small>`:""}</h2><div class="stops">${cards||emptyDay(d)}</div></section>`;
 }
+function emptyDay(d){ const why=[...new Set(d.why||[])]; return `<div class="freeday"><b>Free time</b><span>${why.length?"Nothing fit this day: "+why.map(esc).join("; ")+".":"Nothing on sale fit this day."}</span><span class="tip">Try adding another interest (like food, culture or nightlife) or a bigger budget, then plan again.</span></div>`; }
 const TILTS=[-2.2,1.6,-0.8,2.4,-1.6,0.9];
 function stopHTML(s,di,si,leg){
   const o=s.o, p=s.pick.opt, img=o.primaryImageUrl||(o.imageUrls||[])[0];
@@ -734,19 +747,16 @@ async function openDeck(session,isCaptain){
 /* the inked trail with footprints that appear as ye scroll */
 let fps=[];
 function drawTrail(){
-  const svg=$("#trail"), host=$("#result"); if(!svg||!host) return;
-  const hr=host.getBoundingClientRect(); const W=hr.width, H=host.scrollHeight;
+  const svg=$("#trail"), host=$("#result"), days=$(".days"); if(!svg||!host||!days) return;
+  const hr=host.getBoundingClientRect(), dr=days.getBoundingClientRect(); const W=hr.width, H=host.scrollHeight;
   svg.setAttribute("viewBox",`0 0 ${W} ${H}`); svg.setAttribute("width",W); svg.setAttribute("height",H);
-  const pts=[...document.querySelectorAll(".day h2")].map(h=>{ const r=h.getBoundingClientRect(); return [r.left-hr.left+6, r.top-hr.top+r.height/2]; });
-  const crew=$(".summary"); if(crew){ const r=crew.getBoundingClientRect(); pts.push([W/2, r.top-hr.top-16]); }
-  if(pts.length<2){ svg.innerHTML=""; return; }
-  let d=`M ${W/2} 0 C ${W/2} 40, ${pts[0][0]} ${pts[0][1]-60}, ${pts[0][0]} ${pts[0][1]}`;
-  for(let i=1;i<pts.length;i++){ const [x0,y0]=pts[i-1],[x1,y1]=pts[i]; const swing=i%2? W-30 : 30; const mid=(y0+y1)/2;
-    d+=` C ${x0} ${y0+90}, ${swing} ${mid-80}, ${swing} ${mid} S ${x1} ${y1-90}, ${x1} ${y1}`; }
+  const x0=dr.left-hr.left+18, yTop=dr.top-hr.top-30; const sum=$(".summary"); const yEnd=(sum?sum.getBoundingClientRect().top-hr.top:dr.bottom-hr.top)+10;
+  let d=`M ${x0} ${yTop}`; const step=140; for(let y=yTop;y<yEnd;y+=step){ const y2=Math.min(yEnd,y+step); const w=((y/step)|0)%2?14:-14; d+=` Q ${x0+w} ${(y+y2)/2}, ${x0} ${y2}`; }
+  if(sum){ const sr=sum.getBoundingClientRect(); d+=` Q ${x0} ${yEnd+30}, ${sr.left-hr.left+sr.width/2-70} ${sr.top-hr.top+24}`; }
   svg.innerHTML=`<path id="trailpath" d="${d}"/>`;
   const path=$("#trailpath"); const L=path.getTotalLength(); const g=[]; let side=1;
-  for(let l=36;l<L-10;l+=38){ const p=path.getPointAtLength(l), q=path.getPointAtLength(Math.min(L,l+1)); const ang=Math.atan2(q.y-p.y,q.x-p.x); const nx=-Math.sin(ang)*9*side, ny=Math.cos(ang)*9*side; const deg=ang*180/Math.PI+90;
-    const sk=side>0?1:-1; g.push(`<g class="fp" data-y="${(p.y).toFixed(0)}" transform="translate(${(p.x+nx).toFixed(1)} ${(p.y+ny).toFixed(1)}) rotate(${(deg+sk*7).toFixed(0)}) scale(${sk*1.7} 1.7)"><ellipse cx=".3" cy="-2.2" rx="2.7" ry="3.6"/><ellipse cx="-.2" cy="4.6" rx="1.9" ry="2.2"/><circle cx="-1.6" cy="-7" r=".8"/><circle cx="-.2" cy="-7.6" r=".85"/><circle cx="1.3" cy="-7.3" r=".75"/><circle cx="2.5" cy="-6.4" r=".6"/></g>`); side*=-1; }
+  for(let l=20;l<L-6;l+=34){ const p=path.getPointAtLength(l), q=path.getPointAtLength(Math.min(L,l+1)); const ang=Math.atan2(q.y-p.y,q.x-p.x); const nx=-Math.sin(ang)*7*side, ny=Math.cos(ang)*7*side; const deg=ang*180/Math.PI+90; const sk=side>0?1:-1;
+    g.push(`<g class="fp" data-y="${(p.y).toFixed(0)}" transform="translate(${(p.x+nx).toFixed(1)} ${(p.y+ny).toFixed(1)}) rotate(${(deg+sk*6).toFixed(0)}) scale(${sk*1.5} 1.5)"><ellipse cx=".3" cy="-2.2" rx="2.7" ry="3.6"/><ellipse cx="-.2" cy="4.6" rx="1.9" ry="2.2"/><circle cx="-1.6" cy="-7" r=".8"/><circle cx="-.2" cy="-7.6" r=".85"/><circle cx="1.3" cy="-7.3" r=".75"/><circle cx="2.5" cy="-6.4" r=".6"/></g>`); side*=-1; }
   svg.insertAdjacentHTML("beforeend",g.join("")); fps=[...svg.querySelectorAll(".fp")]; revealSteps();
 }
 function revealSteps(){ const host=$("#result"); if(!host||!fps.length) return; const top=host.getBoundingClientRect().top; const limit=innerHeight*0.85-top;
