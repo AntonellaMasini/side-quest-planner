@@ -81,7 +81,7 @@ button:active{transform:translateY(1px)}
 .day h2 small{font:500 11px var(--body);letter-spacing:.2em;text-transform:uppercase;color:var(--ink2)}
 .stamp{display:none}
 .stops{display:flex;gap:34px 30px;flex-wrap:wrap;margin-top:26px;align-items:flex-start}
-.stop{position:relative;width:250px;background:var(--paper);padding:11px 11px 14px;border-radius:3px;box-shadow:0 1px 1px rgba(70,45,15,.08),0 14px 30px rgba(70,45,15,.16);transform:rotate(var(--tilt,-1.2deg));animation:drop .6s cubic-bezier(.2,.8,.3,1.15) both;animation-delay:var(--delay,0s);transition:transform .25s}
+.stop{position:relative;width:280px;background:var(--paper);padding:11px 11px 14px;border-radius:3px;box-shadow:0 1px 1px rgba(70,45,15,.08),0 14px 30px rgba(70,45,15,.16);transform:rotate(var(--tilt,-1.2deg));animation:drop .6s cubic-bezier(.2,.8,.3,1.15) both;animation-delay:var(--delay,0s);transition:transform .25s}
 @media (max-width:560px){.stop{width:100%}}
 .stop:hover{transform:rotate(0) translateY(-4px);z-index:2}
 @keyframes drop{from{transform:translateY(-14px) rotate(calc(var(--tilt,-1.2deg)*3));opacity:0}to{transform:rotate(var(--tilt,-1.2deg));opacity:1}}
@@ -95,6 +95,13 @@ button:active{transform:translateY(1px)}
 .stop h3{font:600 italic 22px/1.12 var(--display);margin:0;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .stop h3 a{text-decoration:none}.stop h3 a:hover{text-decoration:underline}
 .meta{display:none}
+.pitch{font:400 13.5px/1.45 var(--body);color:var(--ink2);margin:6px 0 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.facts{margin:10px 0 0;display:grid;gap:5px;font-size:13px}
+.facts div{display:grid;grid-template-columns:86px minmax(0,1fr);gap:8px}
+.facts dt{font:500 10.5px/1.7 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.facts dd{margin:0;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.facts s{color:var(--ink2)}
+.badge{display:inline-block!important}
 .badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .badge{display:none;font:500 11.5px var(--body);padding:2px 9px;border-radius:999px}
 .badge.rule,.badge.buy{display:inline-block}
@@ -548,14 +555,19 @@ function stopHTML(s,di,si,leg){
   const o=s.o, p=s.pick.opt, img=o.primaryImageUrl||(o.imageUrls||[])[0];
   const ba=buyAfter(s); const unknown=(o.unknown||[]).includes("fees")?'<span class="badge">fees not listed</span>':"";
   const badges=[...s.rules.notes.map(n=>`<span class="badge rule">${esc(n)}</span>`),`<span class="badge buy">${esc(ba.text)}</span>`,unknown, p.promoCode&&p.promoPrice?`<span class="badge">${esc(p.promoCode)} → ${money(p.promoPrice.amountMinor)} if eligible</span>`:""].join("");
-  const tilt=TILTS[(di*3+si)%TILTS.length];
+  const tilt=TILTS[(di*3+si)%TILTS.length]; const orig=(p.originalPrice?.amountMinor||0)*s.pick.qty; const save=orig>s.pick.total?Math.round((1-s.pick.total/orig)*100):0;
   return `<article class="stop" data-d="${di}" data-s="${si}" style="--tilt:${tilt}deg;--delay:${(si*0.12).toFixed(2)}s">
     <div class="tape">${esc(leg)}</div>
     <div class="photo">${img?`<img src="${esc(img)}" alt="" loading="lazy">`:""}<span class="when">${SLOT_LABEL[s.slot]}</span><span class="tag-price">${money0(s.pick.total)}</span></div>
     <div class="cap">
       <h3><a href="${esc(o.offerUrl)}" target="_blank" rel="noopener">${esc(o.experienceTitle||o.title)}</a></h3>
-      <div class="meta">${esc(s.pick.qty)} × ${esc(p.title)}</div>
-      <div class="meta">${esc(s.loc.street||s.loc.name||"")}</div>
+      ${o.pitch?`<p class="pitch">${esc(o.pitch)}</p>`:""}
+      <dl class="facts">
+        <div><dt>You get</dt><dd>${esc(s.pick.qty)} × ${esc(p.title)}</dd></div>
+        <div><dt>Where</dt><dd>${esc([s.loc.street||s.loc.name,s.loc.city].filter(Boolean).join(", "))}</dd></div>
+        <div><dt>Travel</dt><dd>${esc(leg)}</dd></div>
+        ${save>0?`<div><dt>Price</dt><dd>${money0(s.pick.total)} <s>${money0(orig)}</s> · save ${save}%</dd></div>`:""}
+      </dl>
       <div class="badges">${badges}</div>
       <div class="foot"><span class="each">${money0(s.pick.total/plan.brief.group)} each</span><div class="btns"><button type="button" class="swap" aria-label="Swap for something nearby" title="Swap">↻</button><a class="add" href="${esc(buyLink(s))}" target="ls_cart" rel="noopener" title="Add to cart">Add</a></div></div>
     </div>
