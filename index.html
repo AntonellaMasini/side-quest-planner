@@ -235,6 +235,14 @@ body::after{opacity:.45;background-image:radial-gradient(rgba(255,255,255,.9) .7
 .photo .tag-price{background:var(--red)}
 .btns a.add{background:var(--ink)}
 @media (max-width:620px){.retro{-webkit-text-stroke:1.5px var(--ink)}}
+
+/* fixes: no sideways overflow, centred smaller title, readable elevation */
+html,body{overflow-x:clip}
+.hero-band{overflow:hidden}
+.stage-title{left:0;right:0;transform:none;max-width:none;text-align:center;padding:0 16px}
+.stage-title h1.retro{font-size:clamp(46px,7.2vw,104px);-webkit-text-stroke:1.6px var(--ink)}
+.stage-title .kicker{font-size:clamp(16px,1.6vw,20px);margin:22px auto 0;max-width:34ch}
+.alt{left:16px;bottom:20px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 18px;border-radius:999px;font:600 14px var(--body);z-index:3000}
 </style>
 </head>
@@ -247,9 +255,9 @@ body::after{opacity:.45;background-image:radial-gradient(rgba(255,255,255,.9) .7
 
   <section class="stage" id="stage">
     <canvas id="globe" aria-hidden="true"></canvas>
-    <div class="alt" id="alt" aria-hidden="true">Elevation<b>35,000 ft</b></div>
+    <div class="alt" id="alt" aria-hidden="true">Cruising altitude<b>35,000 ft</b></div>
     <div id="map" role="img" aria-label="Map of the planned stops"></div>
-    <div class="stage-title" id="stageTitle"><h1 class="retro" id="retro" aria-label="Side Quest"><span class="cap">S</span>ide <span class="cap">Q</span>uest</h1><p class="kicker">Ahoy, explorer. Tell me where ye're headed and I'll chart the cheapest way.</p></div>
+    <div class="stage-title" id="stageTitle"><h1 class="retro" id="retro" aria-label="Side Quest"><span class="cap">S</span>ide <span class="cap">Q</span>uest</h1><p class="kicker">Ahoy, explorer. Tell me where ye're headed.</p></div>
     <svg class="compass" width="90" height="90" viewBox="0 0 90 90" aria-hidden="true"><circle cx="45" cy="45" r="40" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="45" cy="45" r="31" fill="none" stroke="currentColor" stroke-width=".6" stroke-dasharray="2 4"/><path d="M45 8 L50 45 L45 82 L40 45Z" fill="currentColor"/><path d="M8 45 L45 40 L82 45 L45 50Z" fill="currentColor" opacity=".45"/><text x="45" y="6" text-anchor="middle" font-size="8" fill="currentColor" font-family="monospace">N</text></svg>
     <div class="legend" id="legend" hidden></div>
   </section>
@@ -618,16 +626,18 @@ async function initGlobe(){
   const frame=t=>{ const dt=t-last; last=t; if(G.spin&&!matchMedia("(prefers-reduced-motion: reduce)").matches) G.rot[0]+=dt*0.006;
     const proj=d3.geoOrthographic().scale(G.scale).translate(G.scale>G.base*1.3?[G.w/2,G.h/2]:[G.cx,G.cy]).rotate(G.rot).clipAngle(90).precision(.5);
     const path=d3.geoPath(proj,ctx); ctx.setTransform(G.dpr,0,0,G.dpr,0,0); ctx.clearRect(0,0,G.w,G.h);
-    if(G.scale<G.base*1.2){ const [sx,sy]=proj.translate(); ctx.save(); ctx.fillStyle="rgba(70,90,120,.12)"; ctx.beginPath(); ctx.ellipse(sx+G.scale*.18,sy+G.scale*1.02,G.scale*.95,G.scale*.16,0,0,7); ctx.fill(); ctx.restore(); }
-    ctx.beginPath(); path({type:"Sphere"}); const [cx,cy]=proj.translate(); const g=ctx.createRadialGradient(cx-G.scale*.3,cy-G.scale*.35,G.scale*.1,cx,cy,G.scale); g.addColorStop(0,"#e3eff4"); g.addColorStop(1,"#a9c7d6"); ctx.fillStyle=g; ctx.fill();
-    ctx.beginPath(); path(grat); ctx.strokeStyle="rgba(255,255,255,.28)"; ctx.lineWidth=.7; ctx.stroke();
-    ctx.beginPath(); path(G.land); ctx.fillStyle="#f6ecd4"; ctx.fill(); ctx.strokeStyle="rgba(120,150,170,.45)"; ctx.lineWidth=.8; ctx.stroke();
+    if(G.scale<G.base*1.3){ const [sx,sy]=proj.translate(); const r=G.scale; ctx.save(); ctx.fillStyle="rgba(29,29,31,.12)"; ctx.beginPath(); ctx.ellipse(sx,sy+r*1.08,r*.8,r*.12,0,0,7); ctx.fill();
+      for(let i=6;i>=1;i--){ ctx.beginPath(); ctx.arc(sx+i*1.6,sy+i*2,r,0,7); ctx.fillStyle=i%2?"#1d1d1f":"#ffbd1a"; ctx.fill(); } ctx.restore(); }
+    ctx.beginPath(); path({type:"Sphere"}); const [cx,cy]=proj.translate(); const g=ctx.createRadialGradient(cx-G.scale*.3,cy-G.scale*.35,G.scale*.1,cx,cy,G.scale); g.addColorStop(0,"#7cc0e8"); g.addColorStop(1,"#2f76b0"); ctx.fillStyle=g; ctx.fill();
+    ctx.beginPath(); path(grat); ctx.strokeStyle="rgba(255,255,255,.22)"; ctx.lineWidth=.7; ctx.stroke();
+    ctx.beginPath(); path(G.land); ctx.fillStyle="#fbf0d6"; ctx.fill(); ctx.strokeStyle="rgba(29,29,31,.55)"; ctx.lineWidth=.8; ctx.stroke();
     ctx.beginPath(); path(G.borders); ctx.strokeStyle="rgba(95,179,187,.35)"; ctx.lineWidth=.6; ctx.stroke();
     if(G.scale>G.base*1.6){ ctx.beginPath(); path(G.states); ctx.strokeStyle="rgba(31,78,102,.35)"; ctx.setLineDash([3,3]); ctx.lineWidth=.6; ctx.stroke(); ctx.setLineDash([]); }
     
-    if(G.target){ const p=proj([G.target.lng,G.target.lat]); if(p){ const k=7+Math.sin(t/180)*1.5; ctx.strokeStyle="#c56a4a"; ctx.lineWidth=3.4; ctx.lineCap="round"; ctx.beginPath(); ctx.moveTo(p[0]-k,p[1]-k); ctx.lineTo(p[0]+k,p[1]+k); ctx.moveTo(p[0]+k,p[1]-k); ctx.lineTo(p[0]-k,p[1]+k); ctx.stroke();
-      ctx.font="italic 20px Newsreader, Georgia, serif"; ctx.fillStyle="#2e3a4f"; ctx.fillText(G.target.name,p[0]+12,p[1]-12);} }
-    const z=G.scale/G.base; const el=$("#alt"); if(el){ const ft=Math.max(0,Math.round(35000/Math.pow(z,1.6)/10)*10); el.innerHTML=G.target&&z>8.5?`Ground level<b>${esc(G.target.name)}</b>`:`Elevation<b>${ft.toLocaleString("en-US")} ft</b>`; }
+    ctx.beginPath(); path({type:"Sphere"}); ctx.strokeStyle="#1d1d1f"; ctx.lineWidth=2.2; ctx.stroke();
+    if(G.target){ const p=proj([G.target.lng,G.target.lat]); if(p){ const k=7+Math.sin(t/180)*1.5; ctx.strokeStyle="#f04e2a"; ctx.lineWidth=4; ctx.lineCap="round"; ctx.beginPath(); ctx.moveTo(p[0]-k,p[1]-k); ctx.lineTo(p[0]+k,p[1]+k); ctx.moveTo(p[0]+k,p[1]-k); ctx.lineTo(p[0]-k,p[1]+k); ctx.stroke();
+      ctx.font="600 20px Outfit, sans-serif"; ctx.fillStyle="#1d1d1f"; ctx.fillText(G.target.name,p[0]+12,p[1]-12);} }
+    const z=G.scale/G.base; const el=$("#alt"); if(el){ const ft=Math.max(0,Math.round(35000/Math.pow(z,1.6)/10)*10); el.innerHTML=G.target&&z>8.5?`Landed<b>${esc(G.target.name)}</b>`:(z>1.05?`Descending<b>${ft.toLocaleString("en-US")} ft</b>`:`Cruising altitude<b>${ft.toLocaleString("en-US")} ft</b>`); }
     requestAnimationFrame(frame); };
   requestAnimationFrame(frame);
 }
@@ -644,7 +654,7 @@ async function flyGlobe(cityName){
   const ri=d3.interpolate(r0,r1); await tween(1500,k=>{ G.rot=ri(k); G.scale=G.base+(s0>G.base? (s0-G.base)*(1-k):0); });
   const si=d3.interpolate(G.base,G.base*9); await tween(1700,k=>{ G.scale=si(k); });
   initMap(); map.invalidateSize(); map.setView([C.lat,C.lng],7,{animate:false});
-  $("#map").classList.add("on"); G.canvas.style.opacity=0; $("#alt").innerHTML=`Ground level<b>${esc(cityName)}</b>`;
+  $("#map").classList.add("on"); G.canvas.style.opacity=0; $("#alt").innerHTML=`Landed<b>${esc(cityName)}</b>`;
   map.flyTo([C.lat,C.lng],12,{duration:1.6});
 }
 
