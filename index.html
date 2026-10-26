@@ -119,6 +119,41 @@ button{font:600 15px var(--body);border:0;border-radius:4px;padding:11px 18px;cu
 .note ul{margin:0;padding-left:18px}
 .empty{color:#d9c7a5;font:18px var(--display);padding:22px;border:1px dashed #6b5641;margin-top:26px;text-align:center}
 footer{margin-top:34px;font-size:12.5px;color:#bfa985;max-width:82ch}
+
+.crew{margin-top:22px;background:var(--paper);padding:18px 20px;box-shadow:0 10px 24px rgba(0,0,0,.35)}
+.crew h3{font:28px var(--display);margin:0 0 4px}
+.crew .sub{color:var(--muted);font-size:14px;margin:0 0 12px}
+.crewlink{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 14px}
+.crewlink input{flex:1;min-width:0;font:13px var(--mono);padding:9px 10px;border:1px dashed var(--border);background:var(--card);color:var(--ink)}
+.live{font:12.5px var(--mono);color:var(--good)} .live.off{color:var(--muted)}
+.board{display:grid;gap:12px}
+.slotrow{background:var(--card);border:1px solid var(--rule);padding:10px 12px}
+.slotrow h4{font:14px var(--sc);letter-spacing:.06em;color:var(--muted);margin:0 0 6px}
+.optrow{display:grid;grid-template-columns:minmax(0,1fr) 120px 54px;gap:10px;align-items:center;font-size:14px;padding:3px 0}
+.optrow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar{height:10px;background:var(--rule);position:relative}.bar i{position:absolute;inset:0 auto 0 0;background:var(--brass)}
+.optrow.win .bar i{background:var(--stamp)} .optrow.win .nm{font-weight:700}
+.cnt{font:13px var(--mono);text-align:right}
+.voters{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.voters span{font:12px var(--mono);border:1px solid var(--border);padding:2px 7px;background:var(--card)}
+.deckwrap{position:fixed;inset:0;z-index:2000;background:rgba(27,18,10,.92);display:grid;place-items:center;padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));overflow:auto}
+.deckpanel{width:min(420px,100%);color:var(--paper);text-align:center}
+.deckpanel h2{font:34px/1.05 var(--display);margin:0 0 4px}
+.deckpanel p{color:#d8c6a2;margin:0 0 14px}
+.deckpanel input{width:100%;font:20px var(--display);padding:10px 12px;border:0;background:var(--paper);color:var(--ink);text-align:center}
+.deck{position:relative;height:470px;margin:14px auto 12px;width:min(340px,100%);touch-action:pan-y}
+.vcard{position:absolute;inset:0;background:#fffdf8;color:var(--ink);padding:12px 12px 16px;box-shadow:0 14px 34px rgba(0,0,0,.5);text-align:left;cursor:grab;user-select:none;transition:transform .25s ease}
+.vcard.dragging{transition:none;cursor:grabbing}
+.vcard .photo{aspect-ratio:4/3}
+.vcard h3{font:600 26px/1.05 "Caveat",var(--display);margin:10px 0 4px}
+.vcard .slotline{font:13px var(--sc);letter-spacing:.06em;color:var(--muted)}
+.vcard .pp{font:22px var(--display);color:var(--stamp);margin-top:6px}
+.vcard .of{font:12px var(--mono);color:var(--muted);margin-top:4px}
+.stampv{position:absolute;top:22px;font:28px var(--sc);padding:2px 10px;border:3px solid;opacity:0;transform:rotate(-14deg)}
+.stampv.keep{left:20px;color:var(--good)}.stampv.drop{right:20px;color:#2b6f8f;transform:rotate(14deg)}
+.deckbtns{display:flex;gap:14px;justify-content:center}
+.deckbtns button{font:600 17px var(--body);padding:12px 20px;border-radius:999px}
+.bno{background:#2b6f8f;color:#fff}.byes{background:var(--good);color:#fff}
+.deckprog{font:13px var(--mono);color:#d8c6a2;margin-top:10px}
 .toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;font:600 14px var(--body);z-index:1000}
 .leaflet-container{font:12px var(--body)}
 .pin{width:26px;height:26px;border-radius:50%;color:#fff;font:700 12px var(--mono);display:grid;place-items:center;border:2px solid #fbf6ea;box-shadow:0 1px 4px rgba(0,0,0,.4)}
@@ -129,7 +164,7 @@ footer{margin-top:34px;font-size:12.5px;color:#bfa985;max-width:82ch}
 <div class="wrap">
   <header class="top">
     <div class="brand"><svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="15" fill="none" stroke="#b88a3b" stroke-width="2"/><path d="M17 4 L20 17 L17 30 L14 17 Z" fill="#a8322a"/><circle cx="17" cy="17" r="2.4" fill="#f3ead6"/></svg>Side Quest Planner</div>
-    <div class="built">live deals from LivingSocial · you pay on Groupon</div>
+    <div class="built">live LivingSocial deals · ye pay safely on Groupon</div>
   </header>
 
   <section class="stage" id="stage">
@@ -335,7 +370,7 @@ async function planTrip(text,fly){
       const opts=candidates.filter(c=>!used.has(c.o.id)&&slotOK(c,slot)&&(!c.rules.allow||c.rules.allow.includes(dow))&&!(c.rules.notSatAfter6&&dow===6&&(slot==="night"||slot==="evening"))&&!(c.rules.mothersDay&&dp.date.getMonth()===4&&dp.date.getDay()===0&&dp.date.getDate()>=8&&dp.date.getDate()<=14));
       if(Number.isFinite(cap)){ for(let k=opts.length-1;k>=0;k--) if(spent+opts[k].pick.total>cap*1.08) opts.splice(k,1); }
       if(!opts.length) continue;
-      opts.forEach(c=>{ const dd=dist(anchor,c.loc); c._s=c.score+dd/900+(vibeCount[c.meta.vibe]||0)*2.5+(Number.isFinite(cap)?(c.pick.total/(cap/8))*1.5:0)+(dupKind(c,dp)?40:0); });
+      opts.forEach(c=>{ const dd=dist(anchor,c.loc); c._s=c.score+dd/450+(vibeCount[c.meta.vibe]||0)*2.5+(Number.isFinite(cap)?(c.pick.total/(cap/8))*1.5:0)+(dupKind(c,dp)?40:0); });
       opts.sort((a,b)=>a._s-b._s); const c=opts[0]; if(dupKind(c,dp)) continue;
       used.add(c.o.id); vibeCount[c.meta.vibe]=(vibeCount[c.meta.vibe]||0)+1; spent+=c.pick.total;
       dp.stops.push({...c,slot}); anchor={lat:c.loc.lat,lng:c.loc.lng};
@@ -378,7 +413,9 @@ function render(){
   <div class="actions">
     <button class="brassbtn" id="addall" type="button">Stow the whole plan in my cart</button>
     <button class="ghost" id="ics" type="button">Calendar: when to buy each one</button>
+    <button class="go" id="crewbtn" type="button">Let the crew vote</button>
   </div>
+  <div id="crewbox"></div>
   <div class="days">${plan.days.map((d,i)=>dayHTML(d,i)).join("")}</div>
   <div class="notes">
     <div class="note"><h4>What I checked, captain</h4><ul>
@@ -393,7 +430,7 @@ function render(){
       <li>Drop anchor ${esc(plan.hotel)}: every route sets sail from there.</li></ul></div>
   </div>`;
   $("#result").innerHTML=html;
-  bind(); drawMap();
+  bind(); drawMap(); renderCrew();
 }
 function dayHTML(d,i){
   const n=plan.days.length; const label=i===0?"arrival":i===n-1?"last day":(plan.brief.occasion==="birthday"&&i===Math.min(2,n-2))?"the big day":"";
@@ -424,6 +461,7 @@ function bind(){
   document.querySelectorAll(".stop .swap").forEach(b=>b.addEventListener("click",()=>openSwaps(b.closest(".stop"))));
   $("#addall").addEventListener("click",addAll);
   $("#ics").addEventListener("click",downloadICS);
+  $("#crewbtn").addEventListener("click",startCrew);
 }
 
 /* ---------- swaps (LivingSocial near search) ---------- */
@@ -534,6 +572,94 @@ async function loadHash(){ try{ const st=JSON.parse(decodeURIComponent(escape(at
   for(const [i,ds] of dayStrs.entries()){ if(!ds||!days[i]) continue; for(const it of ds.split("|")){ const [id,opt,qty,slot]=it.split("~"); try{ const o=await readOffer(id,brief.city); const p=o.options.find(x=>x.id===opt)||o.options[0]; const loc=nearestLoc(o,{lat:C.lat,lng:C.lng},C.cities); days[i].stops.push({o,meta:{slot,q:"",vibe:""},loc,pick:{opt:p,qty:+qty,total:p.price.amountMinor*(+qty)},rules:rulesOf(o,p),slot}); }catch(e){ log("One stop is no longer on sale and was left out.","drop"); } } }
   plan={brief,days,center:{lat:C.lat,lng:C.lng},hotel:C.hotel}; $("#chips").innerHTML=`<span class="chip"><b>Shared plan</b>${esc(brief.city)}, ${brief.group} people</span>`; log("Shared plan loaded with today's prices.","ok"); render(); return true; }catch(e){ return false; } }
 
+
+/* ---------- crew vote (swipe deck + leaderboard) ---------- */
+const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+const dec=t=>JSON.parse(decodeURIComponent(escape(atob(t.replace(/-/g,"+").replace(/_/g,"/")))));
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}};
+let crew=null, votes={}, es=null;
+const RELAY=c=>"https://ntfy.sh/sidequest-"+c;
+const base=()=>location.origin+location.pathname;
+function buildDeck(){
+  const used=new Set(plan.days.flatMap(d=>d.stops.map(x=>x.o.id)));
+  return plan.days.flatMap((d,di)=>d.stops.map((s,si)=>{
+    const alts=candidates.filter(c=>!used.has(c.o.id)&&c.meta.slot===s.meta.slot&&c.o.merchant!==s.o.merchant&&(!c.rules.allow||c.rules.allow.includes(d.date.getDay()))&&dist(c.loc,s.loc)<4000)
+      .sort((a,b)=>dist(a.loc,s.loc)-dist(b.loc,s.loc)).slice(0,2);
+    alts.forEach(a=>used.add(a.o.id));
+    return {k:`${di}-${si}`,o:[s,...alts].map(x=>[x.o.id,x.pick.opt.id,x.pick.qty,(x.o.experienceTitle||x.o.title).slice(0,80)])};
+  }));
+}
+function startCrew(){
+  const code=Math.random().toString(36).slice(2,8)+Math.random().toString(36).slice(2,6);
+  crew={c:code,t:$("#q").value,p:location.hash.slice(1),d:buildDeck()};
+  store.set("sq-crew-"+code,crew); store.set("sq-active",code); votes=store.get("sq-votes-"+code,{});
+  log("Crew vote opened. Share the link with yer crew.","ok"); renderCrew(); connectRelay();
+}
+function crewLink(){ return base()+"#crew="+enc({c:crew.c,t:crew.t,d:crew.d}); }
+function connectRelay(){
+  if(!crew) return; if(es){es.close();es=null;}
+  fetch(RELAY(crew.c)+"/json?poll=1&since=all").then(r=>r.text()).then(t=>{ t.split("\n").filter(Boolean).forEach(l=>{ try{ const m=JSON.parse(l); if(m.event==="message") addVotes(JSON.parse(m.message),false); }catch{} }); renderCrew(); }).catch(()=>{});
+  try{ es=new EventSource(RELAY(crew.c)+"/sse"); es.onmessage=e=>{ try{ const m=JSON.parse(e.data); if(m.event==="message"){ addVotes(JSON.parse(m.message),true); renderCrew(); } }catch{} }; es.onerror=()=>{ const l=$("#livedot"); if(l){l.className="live off";l.textContent="Live relay offline. Vote links still work.";} }; }catch{}
+}
+function addVotes(m,announce){ if(!m||!m.n||!m.v) return; votes[m.n]=m.v; if(crew) store.set("sq-votes-"+crew.c,votes); if(announce){ log(`${m.n} voted!`,"ok"); toast(`${m.n} voted`);} }
+function tally(){ const t={}; Object.values(votes).forEach(v=>Object.entries(v).forEach(([k,val])=>{ t[k]=(t[k]||0)+(val?1:0); })); return t; }
+function renderCrew(){
+  const box=$("#crewbox"); if(!box) return; if(!crew){ const a=store.get("sq-active",null); const c=a&&store.get("sq-crew-"+a,null); if(c&&c.p===location.hash.slice(1)){crew=c;votes=store.get("sq-votes-"+c.c,{});connectRelay();} }
+  if(!crew){ box.innerHTML=""; return; }
+  const t=tally(); const names=Object.keys(votes);
+  const nameOf=id=>{ const c=candidates.find(x=>x.o.id===id); if(c) return c.o.experienceTitle||c.o.title; const st=plan.days.flatMap(d=>d.stops).find(x=>x.o.id===id); return st?(st.o.experienceTitle||st.o.title):"Option"; };
+  const rows=crew.d.map(slot=>{ const [di,si]=slot.k.split("-").map(Number); const d=plan.days[di]; if(!d) return "";
+    const counts=slot.o.map(([id])=>t[slot.k+"|"+id]||0); const max=Math.max(...counts,0); const lead=max>0?counts.indexOf(max):0;
+    return `<div class="slotrow"><h4>${fmtDay(d.date)} · ${SLOT_LABEL[(d.stops[si]||{}).slot]||""}</h4>${slot.o.map(([id,,,title],i)=>`<div class="optrow ${i===lead?"win":""}"><span class="nm">${i===lead&&max>0?"👑 ":""}${esc(title||nameOf(id))}</span><span class="bar"><i style="width:${names.length?Math.round(counts[i]/names.length*100):0}%"></i></span><span class="cnt">${counts[i]} ⚓</span></div>`).join("")}</div>`; }).join("");
+  box.innerHTML=`<section class="crew"><h3>Crew vote</h3><p class="sub">Each crew member swipes through the stops and a couple of nearby alternatives: ⚓ to keep, 🌊 to throw overboard. Votes land here.</p>
+    <div class="crewlink"><input id="crewurl" readonly value="${esc(crewLink())}" aria-label="Crew vote link"><button class="brassbtn" type="button" id="copycrew">Copy crew link</button><button class="ghost" type="button" id="selfvote" style="color:var(--ink)">Vote myself</button></div>
+    <div class="crewlink"><input id="pastevote" placeholder="Paste a vote link from the group chat" aria-label="Paste a vote link"><button class="ghost" type="button" id="addvote" style="color:var(--ink)">Add votes</button></div>
+    <div class="live" id="livedot">● Live: votes appear here as they come in (${names.length} voted${names.length?": "+names.map(esc).join(", "):""})</div>
+    <div class="board" style="margin-top:12px">${rows}</div>
+    <div class="actions"><button class="go" type="button" id="lock">Lock in the winners</button></div></section>`;
+  $("#copycrew").onclick=async()=>{ try{await navigator.clipboard.writeText(crewLink());toast("Crew link copied");}catch{ $("#crewurl").select(); } };
+  $("#selfvote").onclick=()=>openDeck({c:crew.c,t:crew.t,d:crew.d},true);
+  $("#addvote").onclick=()=>{ const v=$("#pastevote").value; const m=v.match(/#votes=([\w-]+)/); if(!m){toast("That isn't a vote link");return;} try{ const o=dec(m[1]); if(o.c!==crew.c){toast("That vote is for another trip");return;} addVotes(o,true); renderCrew(); }catch{toast("That link looks broken");} };
+  $("#lock").onclick=lockWinners;
+}
+async function lockWinners(){
+  const t=tally(); const C=CITIES[plan.brief.city]; let changed=0;
+  for(const slot of crew.d){ const [di,si]=slot.k.split("-").map(Number); const counts=slot.o.map(([id])=>t[slot.k+"|"+id]||0); const max=Math.max(...counts); if(max<=0) continue; const w=counts.indexOf(max); if(w===0) continue;
+    const [id,optId,qty]=slot.o[w]; try{ const o=await readOffer(id,plan.brief.city); const opt=o.options.find(x=>x.id===optId)||o.options[0]; const cur=plan.days[di].stops[si];
+      plan.days[di].stops[si]={o,meta:cur.meta,loc:nearestLoc(o,cur.loc||{lat:C.lat,lng:C.lng},C.cities),pick:{opt,qty:+qty,total:opt.price.amountMinor*(+qty)},rules:rulesOf(o,opt),slot:cur.slot}; changed++; }catch{} }
+  log(changed?`The crew has spoken: ${changed} stop${changed>1?"s":""} changed.`:"The crew kept the captain's plan.","ok");
+  writeHash(); crew.p=location.hash.slice(1); store.set("sq-crew-"+crew.c,crew); render(); toast("Winners locked in");
+}
+/* the deck a crew member sees */
+async function openDeck(session,isCaptain){
+  const wrap=document.createElement("div"); wrap.className="deckwrap"; wrap.setAttribute("role","dialog"); wrap.setAttribute("aria-label","Crew vote");
+  wrap.innerHTML=`<div class="deckpanel"><h2>Ahoy, crew mate!</h2><p>Yer captain is planning ${esc(parse(session.t).city)} and wants yer vote. Swipe right ⚓ to keep a stop, left 🌊 to throw it overboard.</p><input id="crewname" placeholder="What does the crew call ye?" maxlength="20" autocomplete="given-name"><div class="deckbtns" style="margin-top:12px"><button class="byes" id="startswipe" type="button">Start swiping</button></div></div>`;
+  document.body.appendChild(wrap);
+  const b=parse(session.t); const C=CITIES[b.city];
+  const cards=[]; session.d.forEach(slot=>{ const [di]=slot.k.split("-").map(Number); const date=new Date(b.start); date.setDate(date.getDate()+di); slot.o.forEach(([id,opt,qty],i)=>cards.push({k:slot.k,id,opt,qty:+qty,date,i,n:slot.o.length})); });
+  const offers=pool([...new Set(cards.map(c=>c.id))],4,id=>readOffer(id,b.city));
+  $("#startswipe").onclick=async()=>{ const name=($("#crewname").value||"").trim(); if(!name){ $("#crewname").focus(); return; }
+    const panel=wrap.querySelector(".deckpanel"); panel.innerHTML=`<h2>${esc(name)}'s vote</h2><div class="deck" id="deck"></div><div class="deckbtns"><button class="bno" id="bno" type="button">🌊 Overboard</button><button class="byes" id="byes" type="button">⚓ Keep</button></div><div class="deckprog" id="prog"></div>`;
+    const ids=[...new Set(cards.map(c=>c.id))]; const got=await offers; const byId={}; ids.forEach((id,i)=>byId[id]=got[i]);
+    const deck=cards.filter(c=>byId[c.id]); const v={}; let idx=0;
+    const show=()=>{ $("#prog").textContent=`${Math.min(idx+1,deck.length)} of ${deck.length}`; const host=$("#deck"); host.innerHTML="";
+      if(idx>=deck.length) return finish(); const c=deck[idx]; const o=byId[c.id]; const opt=o.options.find(x=>x.id===c.opt)||o.options[0]; const img=o.primaryImageUrl||(o.imageUrls||[])[0];
+      const el=document.createElement("div"); el.className="vcard"; el.innerHTML=`<div class="photo">${img?`<img src="${esc(img)}" alt="">`:""}</div><span class="stampv keep">Keep</span><span class="stampv drop">Overboard</span><div class="slotline">${fmtDay(c.date)}</div><h3>${esc(o.experienceTitle||o.title)}</h3><div class="meta">${esc(c.qty)} × ${esc(opt.title)}</div><div class="pp">${money(opt.price.amountMinor*c.qty/b.group)} each</div><div class="of">${c.n>1?`Choice ${c.i+1} of ${c.n} for this slot`:"The captain's pick"}</div>`;
+      host.appendChild(el); drag(el); };
+    const choose=keep=>{ const c=deck[idx]; v[c.k+"|"+c.id]=keep?1:0; const el=$("#deck .vcard"); if(el){ el.style.transform=`translateX(${keep?420:-420}px) rotate(${keep?18:-18}deg)`; } idx++; setTimeout(show,220); };
+    const drag=el=>{ let x0=null,dx=0; el.addEventListener("pointerdown",e=>{x0=e.clientX;el.setPointerCapture(e.pointerId);el.classList.add("dragging");});
+      el.addEventListener("pointermove",e=>{ if(x0==null) return; dx=e.clientX-x0; el.style.transform=`translateX(${dx}px) rotate(${dx/18}deg)`; el.querySelector(".keep").style.opacity=Math.max(0,dx/120); el.querySelector(".drop").style.opacity=Math.max(0,-dx/120); });
+      el.addEventListener("pointerup",()=>{ el.classList.remove("dragging"); if(Math.abs(dx)>90) choose(dx>0); else { el.style.transform=""; el.querySelector(".keep").style.opacity=0; el.querySelector(".drop").style.opacity=0; } x0=null; dx=0; }); };
+    $("#bno").onclick=()=>choose(false); $("#byes").onclick=()=>choose(true);
+    document.addEventListener("keydown",function k(e){ if(!document.body.contains(wrap)){document.removeEventListener("keydown",k);return;} if(e.key==="ArrowRight")choose(true); if(e.key==="ArrowLeft")choose(false); });
+    const finish=async()=>{ const msg={c:session.c,n:name,v}; let live=false; try{ const r=await fetch(RELAY(session.c),{method:"POST",body:JSON.stringify(msg)}); live=r.ok; }catch{}
+      if(isCaptain){ addVotes(msg,false); renderCrew(); wrap.remove(); toast("Yer vote is in"); return; }
+      const link=base()+"#votes="+enc(msg);
+      panel.innerHTML=`<h2>Votes cast, ${esc(name)}!</h2><p>${live?"Yer captain can see them already.":"The live relay didn't answer, so send yer captain this link."} To be safe, drop this link in the group chat too:</p><input readonly value="${esc(link)}" id="votelink" style="font:13px var(--mono)"><div class="deckbtns" style="margin-top:12px"><button class="byes" id="copyvote" type="button">Copy my vote link</button></div><p style="margin-top:14px"><a href="${esc(base())}" style="color:var(--brass)">Plan yer own side quest →</a></p>`;
+      $("#copyvote").onclick=async()=>{ try{await navigator.clipboard.writeText(link);toast("Vote link copied");}catch{ $("#votelink").select(); } }; };
+    show(); };
+}
+
 /* ---------- wire up ---------- */
 $("#brief").addEventListener("submit",async e=>{ e.preventDefault(); const b=$("#go"); b.disabled=true; b.textContent="Charting…";
   const fly=flyGlobe(parse($("#q").value).city);
@@ -542,7 +668,11 @@ $("#brief").addEventListener("submit",async e=>{ e.preventDefault(); const b=$("
 document.querySelectorAll("[data-ex]").forEach(b=>b.addEventListener("click",()=>{ $("#q").value=b.dataset.ex; $("#q").focus(); }));
 $("#share").addEventListener("click",async()=>{ try{ await navigator.clipboard.writeText(location.href); toast("Share link copied"); }catch{ prompt("Copy this link",location.href); } });
 initGlobe(); initMap();
-if(location.hash.length>10){ flyGlobe(parse(decodeURIComponent(escape(atob(location.hash.slice(1)))).includes("\"t\"")?JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1))))).t:"").city).then(()=>loadHash()); }
+const h=location.hash.slice(1);
+if(h.startsWith("crew=")){ try{ const sess=dec(h.slice(5)); openDeck(sess,false); }catch{ toast("That crew link looks broken"); } }
+else if(h.startsWith("votes=")){ try{ const m=dec(h.slice(6)); const c=store.get("sq-crew-"+m.c,null);
+  if(!c){ toast("Open this on the device where ye planned the trip"); } else { const vs=store.get("sq-votes-"+m.c,{}); vs[m.n]=m.v; store.set("sq-votes-"+m.c,vs); store.set("sq-active",m.c); location.hash=c.p; location.reload(); } }catch{ toast("That vote link looks broken"); } }
+else if(location.hash.length>10){ flyGlobe(parse(decodeURIComponent(escape(atob(location.hash.slice(1)))).includes("\"t\"")?JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1))))).t:"").city).then(()=>loadHash()); }
 })();
 </script>
 </body>
